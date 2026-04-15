@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Azul</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Authentic Azul tile colors — inspired by Portuguese azulejos */
+    --blue: #1b5985;        --blue-d: #0e3a5c;        --blue-hi: #3d87b8;
+    --yellow: #d99324;      --yellow-d: #9a6414;      --yellow-hi: #f0b858;
+    --red: #962c2c;         --red-d: #621515;         --red-hi: #c44d4d;
+    --black: #1e232c;       --black-d: #0b0e13;       --black-hi: #3d4552;
+    --cyan: #a8cfd9;        --cyan-d: #6f9ba8;        --cyan-hi: #d6e9ef;
+
+    --accent: #c0392b;
+    --gold: #c9a961;
+    --gold-d: #8a6f2f;
+
+    /* Parchment & board materials */
+    --parchment: #ede0c1;
+    --parchment-d: #d4c296;
+    --parchment-sh: #a88f5a;
+    --wood: #6b4423;
+    --wood-d: #3e2616;
+    --ink: #2a1a0f;
+
+    --bg: #1a2838;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { min-height: 100vh; }
+  body {
+    font-family: 'Cormorant Garamond', 'Georgia', serif;
+    color: #e8dcc0;
+    overflow-x: hidden;
+    background-color: #0e1a26;
+    background-image:
+      radial-gradient(ellipse at top, rgba(60,90,130,.25), transparent 60%),
+      radial-gradient(ellipse at bottom, rgba(20,40,70,.4), transparent 50%);
+  }
+
+  /* ===== TILES — Ceramic Portuguese azulejos ===== */
+  .t {
+    width: 40px; height: 40px;
+    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform .15s ease, box-shadow .15s ease;
+    font-size: 16px;
+    position: relative;
+    user-select: none;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.3),
+      inset 0 -2px 2px rgba(0,0,0,.25),
+      0 2px 3px rgba(0,0,0,.35);
+    overflow: hidden;
+  }
+  .t::after {
+    /* Moorish pattern */
+    content: "";
+    position: absolute;
+    inset: 3px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 85%;
+    opacity: .55;
+  }
+  .t:hover { transform: scale(1.1); z-index: 2; box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 4px 10px rgba(0,0,0,.5); }
+
+  /* BLUE — deep cobalt with 8-point star */
+  .t-blue { background: radial-gradient(ellipse at 30% 20%, var(--blue-hi) 0%, var(--blue) 45%, var(--blue-d) 100%); }
+  .t-blue::after { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><g fill='none' stroke='%23ffffff' stroke-width='1.5' opacity='0.85'><path d='M20 4 L24 16 L36 20 L24 24 L20 36 L16 24 L4 20 L16 16 Z'/><circle cx='20' cy='20' r='3' fill='%23ffffff' opacity='0.6'/></g></svg>"); }
+
+  /* YELLOW — ochre with flower medallion */
+  .t-yellow { background: radial-gradient(ellipse at 30% 20%, var(--yellow-hi) 0%, var(--yellow) 45%, var(--yellow-d) 100%); }
+  .t-yellow::after { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><g fill='%23ffffff' stroke='%23ffffff' stroke-width='1' opacity='0.75'><circle cx='20' cy='20' r='3'/><ellipse cx='20' cy='8' rx='2.5' ry='5'/><ellipse cx='20' cy='32' rx='2.5' ry='5'/><ellipse cx='8' cy='20' rx='5' ry='2.5'/><ellipse cx='32' cy='20' rx='5' ry='2.5'/><circle cx='11' cy='11' r='2'/><circle cx='29' cy='11' r='2'/><circle cx='11' cy='29' r='2'/><circle cx='29' cy='29' r='2'/></g></svg>"); }
+
+  /* RED — crimson with Moorish rosette */
+  .t-red { background: radial-gradient(ellipse at 30% 20%, var(--red-hi) 0%, var(--red) 45%, var(--red-d) 100%); }
+  .t-red::after { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><g fill='none' stroke='%23ffffff' stroke-width='1.3' opacity='0.8'><circle cx='20' cy='20' r='6'/><circle cx='20' cy='20' r='10'/><path d='M20 4 L20 36 M4 20 L36 20 M8 8 L32 32 M32 8 L8 32'/><circle cx='20' cy='20' r='2' fill='%23ffffff'/></g></svg>"); }
+
+  /* BLACK — obsidian with geometric interlace */
+  .t-black { background: radial-gradient(ellipse at 30% 20%, var(--black-hi) 0%, var(--black) 45%, var(--black-d) 100%); }
+  .t-black::after { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><g fill='none' stroke='%23d4c296' stroke-width='1.3' opacity='0.85'><path d='M20 4 L32 12 L32 28 L20 36 L8 28 L8 12 Z'/><path d='M20 10 L27 15 L27 25 L20 30 L13 25 L13 15 Z'/><circle cx='20' cy='20' r='2.5' fill='%23d4c296'/></g></svg>"); }
+
+  /* CYAN (ice/white azulejo) — pale blue with delicate swirl */
+  .t-cyan { background: radial-gradient(ellipse at 30% 20%, var(--cyan-hi) 0%, var(--cyan) 45%, var(--cyan-d) 100%); }
+  .t-cyan::after { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><g fill='none' stroke='%231b5985' stroke-width='1.2' opacity='0.7'><path d='M20 6 Q28 12 28 20 Q28 28 20 34 Q12 28 12 20 Q12 12 20 6 Z'/><path d='M20 12 Q24 16 24 20 Q24 24 20 28 Q16 24 16 20 Q16 16 20 12 Z'/><circle cx='20' cy='20' r='1.5' fill='%231b5985'/></g></svg>"); }
+
+  /* First-player marker */
+  .t-first {
+    background: radial-gradient(ellipse at 30% 20%, #fdf6e3 0%, #ede0c1 50%, #c9b079 100%);
+    color: var(--ink);
+    font-family: 'Cinzel', serif;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: .5px;
+  }
+  .t-first::before { background: linear-gradient(135deg, rgba(255,255,255,.4) 0%, transparent 50%); }
+  .t-first::after { display: none; }
+
+  .t.highlight { box-shadow: 0 0 0 3px #fff, 0 0 22px rgba(255,230,150,.7); transform: scale(1.15); z-index: 3; }
+
+  /* ===== HEADER — Ornate title card ===== */
+  #header {
+    text-align: center;
+    padding: 12px 12px 10px;
+    background:
+      linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.1)),
+      linear-gradient(135deg, #1b3a5c 0%, #0e2338 50%, #1b3a5c 100%);
+    border-bottom: 3px solid var(--gold-d);
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0,0,0,.4);
+  }
+  #header::before, #header::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, var(--gold) 20%, var(--gold-d) 50%, var(--gold) 80%, transparent 100%);
+  }
+  #header::before { top: 0; }
+  #header::after { bottom: 3px; }
+  #header h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 30px;
+    letter-spacing: 14px;
+    color: var(--gold);
+    text-transform: uppercase;
+    font-weight: 900;
+    text-shadow: 0 2px 4px rgba(0,0,0,.6), 0 0 20px rgba(201,169,97,.3);
+    padding-left: 14px;
+  }
+  #status-bar { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 4px; min-height: 28px; }
+  #status { font-size: 15px; color: #e8dcc0; font-style: italic; }
+  #status b { font-style: normal; font-weight: 700; }
+  #status .step-num { display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: var(--gold); color: var(--ink); font-size: 12px; font-weight: 700; font-family: 'Cinzel', serif; align-items: center; justify-content: center; margin-right: 6px; font-style: normal; box-shadow: 0 1px 3px rgba(0,0,0,.4); }
+  #undo-btn { display: none; padding: 4px 14px; border-radius: 6px; border: 1px solid var(--gold-d); background: rgba(0,0,0,.25); color: var(--gold); font-size: 12px; cursor: pointer; transition: .15s; font-family: 'Cinzel', serif; letter-spacing: 1px; }
+  #undo-btn:hover { background: rgba(201,169,97,.15); }
+  .header-btns { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); display: flex; gap: 8px; }
+  .icon-btn { background: rgba(0,0,0,.25); border: 1px solid var(--gold-d); color: var(--gold); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: .15s; font-family: 'Cinzel', serif; font-weight: 700; }
+  .icon-btn:hover { background: rgba(201,169,97,.2); color: #fff; }
+
+  /* ===== FACTORIES — Blue & white porcelain plates ===== */
+  #factories-section { text-align: center; margin-bottom: 4px; }
+  #factories-section .section-label {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 5px;
+    color: var(--gold);
+    margin-bottom: 14px;
+    opacity: .8;
+  }
+  #factories-area { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; align-items: flex-start; }
+
+  .factory {
+    width: 118px; height: 118px;
+    border-radius: 50%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    place-items: center;
+    gap: 4px;
+    padding: 20px;
+    transition: box-shadow .2s, transform .2s;
+    position: relative;
+    background: radial-gradient(circle at 35% 30%, #fdfcf4 0%, #f0ead3 40%, #c9b079 100%);
+    box-shadow:
+      inset 0 0 0 4px #8a6f2f,
+      0 4px 10px rgba(0,0,0,.45);
+  }
+  .factory::before {
+    /* Decorative porcelain rim */
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border-radius: 50%;
+    border: 1px dashed rgba(27,89,133,.35);
+    pointer-events: none;
+  }
+  .factory::after {
+    content: attr(data-num);
+    position: absolute;
+    bottom: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: var(--gold-d);
+    font-family: 'Cinzel', serif;
+    letter-spacing: 2px;
+  }
+  .factory:hover { transform: translateY(-2px); }
+  .factory.glow {
+    box-shadow:
+      inset 0 0 0 4px var(--gold),
+      0 4px 14px rgba(0,0,0,.5),
+      0 0 20px rgba(201,169,97,.5);
+  }
+  .factory .t { width: 34px; height: 34px; position: relative; z-index: 1; }
+  .factory.empty { opacity: .35; filter: grayscale(.6); }
+
+  #center-pool {
+    min-width: 120px;
+    min-height: 80px;
+    background: radial-gradient(ellipse, rgba(40,60,90,.8) 0%, rgba(20,35,55,.9) 100%);
+    border: 2px solid var(--gold-d);
+    border-radius: 18px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 14px 16px;
+    justify-content: center;
+    align-items: center;
+    max-width: 340px;
+    position: relative;
+    transition: box-shadow .2s;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,.5), 0 2px 6px rgba(0,0,0,.3);
+  }
+  #center-pool::before {
+    content: "TABLE CENTER";
+    position: absolute;
+    top: -9px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    background: var(--bg);
+    padding: 0 8px;
+  }
+  #center-pool.glow {
+    border-color: var(--gold);
+    box-shadow: inset 0 2px 8px rgba(0,0,0,.5), 0 0 18px rgba(201,169,97,.4);
+  }
+  #center-pool .t { width: 34px; height: 34px; }
+
+  /* ===== PLAYER BOARDS — Parchment with wooden frame ===== */
+  #boards { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
+  .player-board {
+    padding: 18px 20px 16px;
+    min-width: 460px;
+    transition: box-shadow .2s;
+    border-radius: 10px;
+    position: relative;
+    background: radial-gradient(ellipse at 30% 20%, #f5ebcf 0%, var(--parchment) 50%, var(--parchment-d) 100%);
+    color: var(--ink);
+    box-shadow:
+      0 0 0 4px var(--wood),
+      0 0 0 6px var(--wood-d),
+      0 0 0 7px var(--gold-d),
+      inset 0 0 30px rgba(139,90,43,.12),
+      0 8px 22px rgba(0,0,0,.45);
+  }
+  .player-board.active { box-shadow: 0 0 0 4px var(--wood), 0 0 0 6px var(--wood-d), 0 0 0 7px var(--gold), inset 0 0 30px rgba(139,90,43,.15), inset 0 0 0 1px rgba(168,143,90,.3), 0 8px 28px rgba(201,169,97,.35), 0 3px 8px rgba(0,0,0,.3); }
+  .player-board.inactive { opacity: .78; filter: saturate(.85); }
+
+  .player-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--parchment-sh);
+    position: relative;
+  }
+  .player-header::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-d), transparent);
+  }
+  .player-name {
+    font-family: 'Cinzel', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 1px;
+  }
+  .player-name .turn-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); display: inline-block; animation: pulse 1.5s infinite; box-shadow: 0 0 8px var(--accent); }
+  .player-score {
+    font-family: 'Cinzel', serif;
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--wood-d);
+    background: radial-gradient(ellipse, #fdf6e3 0%, #e8d9ae 100%);
+    padding: 4px 18px;
+    border-radius: 20px;
+    min-width: 64px;
+    text-align: center;
+    transition: .3s;
+    border: 2px solid var(--gold-d);
+    box-shadow: inset 0 1px 2px rgba(255,255,255,.5), inset 0 -1px 3px rgba(139,90,43,.2), 0 2px 4px rgba(0,0,0,.2);
+  }
+  .player-score.pop { animation: popScore .45s ease; }
+  @keyframes popScore { 50% { transform: scale(1.25); color: var(--accent); } }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+  .board-content { display: flex; gap: 8px; align-items: flex-start; position: relative; }
+
+  /* Pattern lines — Etched into parchment */
+  .pattern-lines { display: flex; flex-direction: column; gap: 4px; padding: 6px; border-radius: 6px; background: rgba(139,90,43,.06); border: 1px solid rgba(139,90,43,.15); }
+  .p-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 3px;
+    height: 40px;
+    padding: 0 3px;
+    border-radius: 4px;
+    transition: .15s;
+    cursor: default;
+    position: relative;
+  }
+  .p-row.can-place { cursor: pointer; background: rgba(201,169,97,.18); box-shadow: inset 0 0 0 1px var(--gold); }
+  .p-row.can-place:hover { background: rgba(201,169,97,.35); }
+  .p-row.can-place::before { content: "\2190  place here"; position: absolute; left: -86px; top: 50%; transform: translateY(-50%); font-size: 10px; color: var(--wood-d); font-family: 'Cinzel', serif; letter-spacing: 1px; font-weight: 700; white-space: nowrap; pointer-events: none; }
+  .p-row.cant-place { cursor: not-allowed; opacity: .45; }
+
+  .p-slot {
+    width: 40px; height: 40px;
+    border-radius: 5px;
+    background:
+      linear-gradient(135deg, rgba(139,90,43,.15) 0%, rgba(168,143,90,.25) 100%);
+    box-shadow:
+      inset 0 2px 3px rgba(139,90,43,.4),
+      inset 0 -1px 1px rgba(255,255,255,.3);
+  }
+  .p-slot.filled { background: none; box-shadow: none; padding: 0; }
+  .p-slot.filled > .t { width: 100%; height: 100%; cursor: default; }
+  .p-slot.preview {
+    background: none;
+    box-shadow: inset 0 0 0 2px var(--accent);
+    opacity: .55;
+    animation: previewPulse 1.2s ease-in-out infinite;
+  }
+  @keyframes previewPulse { 0%,100% { opacity: .45; } 50% { opacity: .75; } }
+
+  /* Arrow col */
+  .arrow-col { display: flex; flex-direction: column; gap: 4px; color: var(--wood); font-size: 18px; font-weight: 700; }
+  .arrow-col span { height: 40px; display: flex; align-items: center; justify-content: center; opacity: .4; }
+  .arrow-col span.ready { color: var(--accent); opacity: 1; animation: pulse 1s infinite; text-shadow: 0 0 6px var(--accent); }
+
+  /* Wall — Embossed mosaic grid */
+  .wall {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px;
+    border-radius: 6px;
+    background: rgba(139,90,43,.06);
+    border: 1px solid rgba(139,90,43,.15);
+  }
+  .wall-row { display: flex; gap: 3px; }
+  .w-slot {
+    width: 40px; height: 40px;
+    border-radius: 5px;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+      inset 0 2px 3px rgba(139,90,43,.35),
+      inset 0 -1px 1px rgba(255,255,255,.25);
+  }
+  .w-slot::before {
+    /* Faded mosaic color hint */
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border-radius: 3px;
+    opacity: .2;
+  }
+  .w-slot.w-blue::before { background: var(--blue); }
+  .w-slot.w-yellow::before { background: var(--yellow); }
+  .w-slot.w-red::before { background: var(--red); }
+  .w-slot.w-black::before { background: var(--black); }
+  .w-slot.w-cyan::before { background: var(--cyan-d); }
+  .w-slot.placed { box-shadow: inset 0 0 0 1px rgba(0,0,0,.2), 0 2px 4px rgba(0,0,0,.3); }
+  .w-slot.placed::before { display: none; }
+  .w-slot.placed > .t { position: absolute; inset: 0; width: 100%; height: 100%; cursor: default; }
+  .w-slot.placed.new-tile { animation: wallPop .5s ease; }
+  @keyframes wallPop { 0% { transform: scale(0) rotate(180deg); opacity: 0; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+
+  /* Floor */
+  .floor-area { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--parchment-sh); position: relative; }
+  .floor-area::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-d), transparent);
+  }
+  .floor-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .floor-label { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 3px; color: var(--wood-d); text-transform: uppercase; font-weight: 700; }
+  .floor-click { font-size: 11px; color: var(--accent); cursor: pointer; display: none; font-style: italic; font-weight: 700; }
+  .floor-click:hover { text-decoration: underline; }
+  .floor-penalties { display: flex; gap: 3px; margin-bottom: 3px; }
+  .floor-penalties span {
+    width: 36px;
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--red-d);
+  }
+  .floor-line { display: flex; gap: 3px; }
+  .floor-slot {
+    width: 36px; height: 36px;
+    border-radius: 4px;
+    background: linear-gradient(135deg, rgba(139,90,43,.12) 0%, rgba(168,143,90,.2) 100%);
+    box-shadow: inset 0 2px 2px rgba(139,90,43,.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: .15s;
+  }
+  .floor-slot.filled { background: none; box-shadow: none; }
+  .floor-slot.filled > .t { width: 100%; height: 100%; cursor: default; }
+  .floor-line.can-drop { cursor: pointer; }
+  .floor-line.can-drop .floor-slot:not(.filled) { box-shadow: inset 0 0 0 2px var(--accent); background: rgba(192,57,43,.1); }
+
+  /* ===== BUTTONS ===== */
+  .btn {
+    padding: 10px 28px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: .2s;
+    font-weight: 700;
+    letter-spacing: 2px;
+    font-family: 'Cinzel', serif;
+    text-transform: uppercase;
+  }
+  .btn-primary {
+    background: linear-gradient(180deg, #d4a857 0%, var(--gold) 50%, #8a6f2f 100%);
+    color: var(--ink);
+    border: 1px solid var(--gold-d);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.4), inset 0 -1px 0 rgba(0,0,0,.2), 0 3px 8px rgba(0,0,0,.4);
+  }
+  .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 5px 14px rgba(201,169,97,.4); }
+  .btn-ghost {
+    background: rgba(0,0,0,.25);
+    color: var(--gold);
+    border: 1px solid var(--gold-d);
+  }
+  .btn-ghost:hover { background: rgba(201,169,97,.15); color: #fff; }
+  .btn-sm { padding: 6px 18px; font-size: 12px; }
+
+  #controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
+
+  /* ===== GAME OVER ===== */
+  #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.8); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(6px); }
+  #overlay.show { display: flex; }
+  #overlay-content {
+    background:
+      radial-gradient(ellipse at 30% 20%, #f5ebcf 0%, var(--parchment) 50%, var(--parchment-d) 100%);
+    color: var(--ink);
+    border-radius: 12px;
+    padding: 40px 48px;
+    text-align: center;
+    max-width: 460px;
+    animation: fadeIn .4s ease;
+    box-shadow: 0 0 0 4px var(--wood), 0 0 0 6px var(--wood-d), 0 0 0 7px var(--gold), 0 20px 60px rgba(0,0,0,.6);
+  }
+  #overlay-content h2 { font-family: 'Cinzel', serif; font-size: 32px; color: var(--wood-d); margin-bottom: 20px; letter-spacing: 3px; }
+  #overlay-content .scores-list { text-align: left; margin: 0 auto 24px; display: inline-block; min-width: 260px; }
+  #overlay-content .score-row { display: flex; justify-content: space-between; gap: 40px; padding: 8px 12px; border-bottom: 1px solid var(--parchment-sh); font-size: 16px; font-family: 'Cinzel', serif; }
+  #overlay-content .score-row:first-child { color: var(--wood-d); font-weight: 700; background: rgba(201,169,97,.2); border-radius: 6px; }
+  #overlay-content .score-row .pts { font-weight: 700; }
+  .bonus-details { font-size: 12px; color: var(--wood); font-style: italic; margin-bottom: 18px; }
+
+  /* ===== SETUP ===== */
+  #setup { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 75vh; gap: 26px; animation: fadeIn .5s ease; padding: 20px; }
+  #setup h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 48px;
+    color: var(--gold);
+    letter-spacing: 18px;
+    text-transform: uppercase;
+    font-weight: 900;
+    padding-left: 18px;
+    text-shadow: 0 4px 12px rgba(0,0,0,.6), 0 0 30px rgba(201,169,97,.3);
+  }
+  #setup .subtitle { color: #b0a07a; font-size: 16px; margin-top: -20px; font-style: italic; letter-spacing: 2px; }
+  .setup-cards { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+  .setup-card {
+    background:
+      linear-gradient(180deg, rgba(0,0,0,.2), rgba(0,0,0,.4)),
+      radial-gradient(ellipse at 30% 20%, rgba(201,169,97,.15), transparent);
+    border: 2px solid var(--gold-d);
+    border-radius: 10px;
+    padding: 20px 28px;
+    cursor: pointer;
+    transition: .2s;
+    text-align: center;
+    min-width: 140px;
+    box-shadow: inset 0 1px 0 rgba(201,169,97,.2), 0 3px 8px rgba(0,0,0,.3);
+  }
+  .setup-card:hover { border-color: var(--gold); transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,.4); }
+  .setup-card.sel {
+    border-color: var(--gold);
+    background: linear-gradient(180deg, rgba(201,169,97,.25), rgba(201,169,97,.1));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 0 20px rgba(201,169,97,.3);
+  }
+  .setup-card .num { font-family: 'Cinzel', serif; font-size: 26px; font-weight: 900; color: var(--gold); }
+  .setup-card .desc { font-size: 12px; color: #b0a07a; margin-top: 4px; font-style: italic; }
+  .setup-row { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .setup-row label { font-family: 'Cinzel', serif; font-size: 11px; text-transform: uppercase; letter-spacing: 4px; color: var(--gold); opacity: .8; }
+
+  /* ===== TUTORIAL OVERLAY ===== */
+  #tutorial-overlay { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,.82); backdrop-filter: blur(5px); }
+  #tutorial-overlay.show { display: flex; align-items: center; justify-content: center; }
+  .tut-card {
+    background: radial-gradient(ellipse at 30% 20%, #f5ebcf 0%, var(--parchment) 50%, var(--parchment-d) 100%);
+    color: var(--ink);
+    border-radius: 10px;
+    padding: 30px 36px;
+    max-width: 580px;
+    width: 90%;
+    animation: fadeIn .35s ease;
+    position: relative;
+    box-shadow: 0 0 0 4px var(--wood), 0 0 0 6px var(--wood-d), 0 0 0 7px var(--gold), 0 20px 50px rgba(0,0,0,.5);
+  }
+  .tut-card h3 { font-family: 'Cinzel', serif; color: var(--wood-d); font-size: 22px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px; letter-spacing: 2px; }
+  .tut-card h3 .tut-step { background: linear-gradient(180deg, var(--gold), #8a6f2f); color: var(--ink); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 900; box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 2px 4px rgba(0,0,0,.3); }
+  .tut-card p { font-size: 15px; line-height: 1.7; color: var(--ink); margin-bottom: 12px; }
+  .tut-card b { color: var(--wood-d); }
+  .tut-card .tut-visual {
+    background: rgba(139,90,43,.1);
+    border: 1px solid var(--parchment-sh);
+    border-radius: 10px;
+    padding: 18px;
+    margin: 14px 0;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .tut-card .tut-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+  .tut-card .tut-dots { display: flex; gap: 6px; }
+  .tut-card .tut-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--parchment-sh); transition: .2s; cursor: pointer; }
+  .tut-card .tut-dot.active { background: var(--gold-d); transform: scale(1.3); }
+  .tut-card .tut-key { display: inline-block; background: rgba(255,255,255,.6); border: 1px solid var(--parchment-sh); border-radius: 4px; padding: 1px 7px; font-size: 11px; color: var(--ink); font-family: 'Cinzel', serif; }
+
+  /* ===== ROUND SUMMARY ===== */
+  #round-summary { display: none; position: fixed; inset: 0; z-index: 150; background: rgba(0,0,0,.82); backdrop-filter: blur(5px); align-items: center; justify-content: center; }
+  #round-summary.show { display: flex; }
+  .summary-card {
+    background: radial-gradient(ellipse at 30% 20%, #f5ebcf 0%, var(--parchment) 50%, var(--parchment-d) 100%);
+    color: var(--ink);
+    border-radius: 10px;
+    padding: 28px 36px;
+    max-width: 520px;
+    width: 90%;
+    text-align: center;
+    animation: fadeIn .4s ease;
+    box-shadow: 0 0 0 4px var(--wood), 0 0 0 6px var(--wood-d), 0 0 0 7px var(--gold), 0 20px 50px rgba(0,0,0,.5);
+  }
+  .summary-card h3 { font-family: 'Cinzel', serif; color: var(--wood-d); font-size: 24px; margin-bottom: 18px; letter-spacing: 3px; }
+  .summary-players { display: flex; flex-direction: column; gap: 8px; margin-bottom: 22px; }
+  .summary-p { display: flex; justify-content: space-between; align-items: center; padding: 10px 18px; background: rgba(139,90,43,.08); border: 1px solid var(--parchment-sh); border-radius: 8px; }
+  .summary-p .sp-name { font-family: 'Cinzel', serif; font-weight: 700; color: var(--ink); }
+  .summary-p .sp-change { font-size: 13px; font-style: italic; }
+  .summary-p .sp-change.pos { color: #2d5a2d; }
+  .summary-p .sp-change.neg { color: var(--red-d); }
+  .summary-p .sp-score { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 900; color: var(--wood-d); }
+
+  /* ===== TOOLTIP ===== */
+  .tooltip { position: fixed; z-index: 300; background: var(--parchment); color: var(--ink); border: 1px solid var(--gold-d); border-radius: 6px; padding: 8px 12px; font-size: 12px; pointer-events: none; max-width: 220px; line-height: 1.5; box-shadow: 0 4px 20px rgba(0,0,0,.5); }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Responsive */
+  @media (max-width: 1050px) {
+    .player-board { min-width: 400px; padding: 14px; }
+    .t, .p-slot, .w-slot { width: 34px; height: 34px; }
+    .p-row { height: 34px; }
+    .arrow-col span { height: 34px; }
+    .floor-slot { width: 32px; height: 32px; }
+    .floor-penalties span { width: 32px; }
+    .p-row.can-place::before { display: none; }
+    .factory { width: 108px; height: 108px; }
+    .factory .t { width: 30px; height: 30px; }
+  }
+
+  /* ===== GAME WRAPPER ===== */
+  #game { display: flex; flex-direction: column; align-items: center; padding: 24px 20px 20px; gap: 26px; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <h1>Azul</h1>
+  <div id="status-bar">
+    <span id="status"></span>
+    <button id="undo-btn" onclick="undoPick()">Undo</button>
+  </div>
+  <div class="header-btns">
+    <button class="icon-btn" onclick="showTutorial()" title="How to play">?</button>
+    <button class="icon-btn" onclick="restartGame()" title="New game">&#x21bb;</button>
+  </div>
+</div>
+
+<div id="game">
+  <!-- ===== SETUP ===== -->
+  <div id="setup">
+    <h2>Azul</h2>
+    <p class="subtitle">The beautiful tile-laying game</p>
+
+    <div class="setup-row">
+      <label>Players</label>
+      <div class="setup-cards" id="player-cards">
+        <div class="setup-card sel" data-val="2" onclick="selectCard(this,'player-cards')"><div class="num">2</div><div class="desc">5 factories</div></div>
+        <div class="setup-card" data-val="3" onclick="selectCard(this,'player-cards')"><div class="num">3</div><div class="desc">7 factories</div></div>
+        <div class="setup-card" data-val="4" onclick="selectCard(this,'player-cards')"><div class="num">4</div><div class="desc">9 factories</div></div>
+      </div>
+    </div>
+
+    <div class="setup-row">
+      <label>Mode</label>
+      <div class="setup-cards" id="mode-cards">
+        <div class="setup-card sel" data-val="ai" onclick="selectCard(this,'mode-cards')"><div class="num">vs AI</div><div class="desc">Play solo</div></div>
+        <div class="setup-card" data-val="human" onclick="selectCard(this,'mode-cards')"><div class="num">Hot Seat</div><div class="desc">Pass & play</div></div>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:12px; margin-top:8px;">
+      <button class="btn btn-primary" onclick="startGame()">Start Game</button>
+      <button class="btn btn-ghost" onclick="showTutorial()">How to Play</button>
+    </div>
+  </div>
+
+  <!-- ===== GAME AREA ===== -->
+  <div id="game-area" style="display:none; width:100%;">
+    <div id="factories-section">
+      <div class="section-label">Factory Displays</div>
+      <div id="factories-area"></div>
+    </div>
+    <div id="boards"></div>
+    <div id="controls">
+      <button class="btn btn-ghost btn-sm" onclick="restartGame()">New Game</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== GAME OVER ===== -->
+<div id="overlay">
+  <div id="overlay-content">
+    <h2 id="winner-text"></h2>
+    <div id="final-scores" class="scores-list"></div>
+    <div id="bonus-info" class="bonus-details"></div>
+    <button class="btn btn-primary" onclick="restartGame()">Play Again</button>
+  </div>
+</div>
+
+<!-- ===== ROUND SUMMARY ===== -->
+<div id="round-summary">
+  <div class="summary-card">
+    <h3 id="summary-title"></h3>
+    <div id="summary-players" class="summary-players"></div>
+    <button class="btn btn-primary btn-sm" id="summary-btn" onclick="closeSummaryAndContinue()">Continue</button>
+  </div>
+</div>
+
+<!-- ===== TUTORIAL ===== -->
+<div id="tutorial-overlay">
+  <div class="tut-card">
+    <h3 id="tut-title"></h3>
+    <div id="tut-body"></div>
+    <div class="tut-nav">
+      <div class="tut-dots" id="tut-dots"></div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-ghost btn-sm" id="tut-prev" onclick="tutPrev()">Back</button>
+        <button class="btn btn-primary btn-sm" id="tut-next" onclick="tutNext()">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ CONSTANTS ============
+const COLORS = ['blue','yellow','red','black','cyan'];
+const COLOR_ICONS = { blue:'\u25C6', yellow:'\u2605', red:'\u2764', black:'\u2736', cyan:'\u2022' };
+const FLOOR_PEN = [-1,-1,-2,-2,-2,-3,-3];
+const WALL = [
+  ['blue','yellow','red','black','cyan'],
+  ['cyan','blue','yellow','red','black'],
+  ['black','cyan','blue','yellow','red'],
+  ['red','black','cyan','blue','yellow'],
+  ['yellow','red','black','cyan','blue'],
+];
+
+// ============ STATE ============
+let S = {}, CFG = {}, sel = null, undoState = null;
+
+function initState(np, ai) {
+  const nf = np * 2 + 1;
+  CFG = { np, ai, nf };
+  S = { fac:[], ctr:[], ctrFirst:true, players:[], cur:0, round:1, phase:'pick', over:false };
+  for (let i = 0; i < np; i++) {
+    S.players.push({
+      name: (ai && i > 0) ? 'AI' : `Player ${i+1}`,
+      isAI: ai && i > 0,
+      score: 0,
+      pat: [[],[],[],[],[]], // pattern lines
+      wall: Array.from({length:5}, ()=>Array(5).fill(false)),
+      floor: [],
+      first: false,
+    });
+  }
+  fillFactories();
+  sel = null; undoState = null;
+}
+
+function fillFactories() {
+  S.fac = [];
+  const bag = makeBag();
+  for (let i = 0; i < CFG.nf; i++) {
+    const f = [];
+    for (let j = 0; j < 4 && bag.length; j++) {
+      f.push(bag.splice(Math.floor(Math.random()*bag.length),1)[0]);
+    }
+    S.fac.push(f);
+  }
+  S.ctr = [];
+  S.ctrFirst = true;
+}
+
+function makeBag() {
+  const b = [];
+  for (const c of COLORS) for (let i = 0; i < 20; i++) b.push(c);
+  for (let i = b.length-1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [b[i],b[j]]=[b[j],b[i]]; }
+  return b;
+}
+
+function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
+
+// ============ GAME LOGIC ============
+function pickTiles(src, fi, color) {
+  const p = S.players[S.cur];
+  if (p.isAI || S.phase !== 'pick' || S.over) return;
+
+  // Save undo state
+  undoState = deepClone(S);
+
+  let count = 0;
+  if (src === 'factory') {
+    const fac = S.fac[fi];
+    const rest = [];
+    for (const t of fac) { if (t === color) count++; else rest.push(t); }
+    S.fac[fi] = [];
+    S.ctr.push(...rest);
+  } else {
+    count = S.ctr.filter(t => t === color).length;
+    S.ctr = S.ctr.filter(t => t !== color);
+    if (S.ctrFirst) { p.first = true; p.floor.push('first'); S.ctrFirst = false; }
+  }
+
+  sel = { color, count };
+  S.phase = 'place';
+  setStatus(`<span class="step-num">2</span> Place ${count} <b style="color:var(--${color})">${color}</b> tile${count>1?'s':''} on a pattern row`);
+  document.getElementById('undo-btn').style.display = 'inline-block';
+  render();
+}
+
+function undoPick() {
+  if (!undoState || S.phase !== 'place') return;
+  S = undoState;
+  sel = null; undoState = null;
+  S.phase = 'pick';
+  document.getElementById('undo-btn').style.display = 'none';
+  setStatus(`<span class="step-num">1</span> ${S.players[S.cur].name}, pick tiles from a factory or center`);
+  render();
+}
+
+function placeTiles(row) {
+  if (!sel || S.phase !== 'place' || S.over) return;
+  const p = S.players[S.cur];
+  if (p.isAI) return;
+  const { color, count } = sel;
+
+  if (row === -1) {
+    for (let i = 0; i < count; i++) if (p.floor.length < 7) p.floor.push(color);
+  } else {
+    const line = p.pat[row], max = row + 1;
+    const wc = WALL[row].indexOf(color);
+    if (p.wall[row][wc]) return;
+    if (line.length > 0 && line[0] !== color) return;
+    const space = max - line.length;
+    const toPlace = Math.min(count, space);
+    for (let i = 0; i < toPlace; i++) line.push(color);
+    for (let i = 0; i < count - toPlace; i++) if (p.floor.length < 7) p.floor.push(color);
+  }
+
+  sel = null; undoState = null;
+  S.phase = 'pick';
+  document.getElementById('undo-btn').style.display = 'none';
+  endTurn();
+}
+
+function endTurn() {
+  const allEmpty = S.fac.every(f => !f.length) && !S.ctr.length;
+  if (allEmpty) { endRound(); return; }
+  S.cur = (S.cur + 1) % CFG.np;
+  setStatus(`<span class="step-num">1</span> ${S.players[S.cur].name}, pick tiles from a factory or center`);
+  render();
+  if (S.players[S.cur].isAI && !S.over) setTimeout(doAI, 500);
+}
+
+function endRound() {
+  // Save pre-scores for summary
+  const pre = S.players.map(p => p.score);
+  const details = S.players.map(p => ({ wallPts: 0, floorPts: 0 }));
+
+  for (let pi = 0; pi < S.players.length; pi++) {
+    const p = S.players[pi];
+    for (let r = 0; r < 5; r++) {
+      if (p.pat[r].length === r + 1) {
+        const c = p.pat[r][0], col = WALL[r].indexOf(c);
+        p.wall[r][col] = true;
+        p.pat[r] = [];
+        let h=0, v=0;
+        for (let x=col-1; x>=0 && p.wall[r][x]; x--) h++;
+        for (let x=col+1; x<5 && p.wall[r][x]; x++) h++;
+        for (let x=r-1; x>=0 && p.wall[x][col]; x--) v++;
+        for (let x=r+1; x<5 && p.wall[x][col]; x++) v++;
+        let pts = (h>0&&v>0) ? h+v+2-1 : (h>0) ? h+1 : (v>0) ? v+1 : 1;
+        p.score += pts;
+        details[pi].wallPts += pts;
+      }
+    }
+    for (let i = 0; i < p.floor.length && i < FLOOR_PEN.length; i++) {
+      details[pi].floorPts += FLOOR_PEN[i];
+    }
+    p.score = Math.max(0, p.score + details[pi].floorPts);
+    p.floor = [];
+  }
+
+  const isEnd = S.players.some(p => p.wall.some(r => r.every(c => c)));
+  if (isEnd) {
+    finalScore();
+    S.over = true;
+    render();
+    showGameOver();
+    return;
+  }
+
+  // Show round summary
+  showRoundSummary(pre, details);
+}
+
+function showRoundSummary(pre, details) {
+  const el = document.getElementById('round-summary');
+  document.getElementById('summary-title').textContent = `Round ${S.round} Complete`;
+  const cont = document.getElementById('summary-players');
+  cont.innerHTML = '';
+  for (let i = 0; i < S.players.length; i++) {
+    const p = S.players[i];
+    const change = p.score - pre[i];
+    const d = document.createElement('div');
+    d.className = 'summary-p';
+    d.innerHTML = `
+      <span class="sp-name">${p.name}</span>
+      <span class="sp-change ${change>=0?'pos':'neg'}">${change>=0?'+':''}${change} (wall +${details[i].wallPts}, floor ${details[i].floorPts})</span>
+      <span class="sp-score">${p.score}</span>
+    `;
+    cont.appendChild(d);
+  }
+  el.classList.add('show');
+  render();
+}
+
+function closeSummaryAndContinue() {
+  document.getElementById('round-summary').classList.remove('show');
+  S.round++;
+  const fi = S.players.findIndex(p => p.first);
+  if (fi >= 0) { S.cur = fi; S.players[fi].first = false; }
+  fillFactories();
+  S.phase = 'pick';
+  setStatus(`<span class="step-num">1</span> Round ${S.round} &mdash; ${S.players[S.cur].name}, pick tiles`);
+  render();
+  if (S.players[S.cur].isAI) setTimeout(doAI, 500);
+}
+
+function finalScore() {
+  for (const p of S.players) {
+    for (let r=0;r<5;r++) if(p.wall[r].every(c=>c)) p.score+=2;
+    for (let c=0;c<5;c++) if(p.wall.every(r=>r[c])) p.score+=7;
+    for (const col of COLORS) {
+      let n=0;
+      for (let r=0;r<5;r++) { const c=WALL[r].indexOf(col); if(p.wall[r][c]) n++; }
+      if (n===5) p.score+=10;
+    }
+  }
+}
+
+// ============ AI ============
+function doAI() {
+  if (S.over) return;
+  const p = S.players[S.cur];
+  const moves = aiMoves(p);
+  if (!moves.length) { endTurn(); return; }
+  let best=moves[0], bs=-Infinity;
+  for (const m of moves) { const s=aiEval(p,m); if(s>bs){bs=s;best=m;} }
+  aiExec(p, best);
+  S.phase = 'pick';
+  endTurn();
+}
+
+function aiMoves(p) {
+  const srcs = [], moves = [];
+  S.fac.forEach((f,fi) => {
+    if(!f.length) return;
+    for (const c of [...new Set(f)]) srcs.push({src:'f',fi,color:c,count:f.filter(t=>t===c).length});
+  });
+  if (S.ctr.length) for (const c of [...new Set(S.ctr)]) srcs.push({src:'c',fi:-1,color:c,count:S.ctr.filter(t=>t===c).length});
+  for (const s of srcs) {
+    for (let r=0;r<5;r++) {
+      const line=p.pat[r], max=r+1, wc=WALL[r].indexOf(s.color);
+      if(p.wall[r][wc]||line.length>=max||(line.length&&line[0]!==s.color)) continue;
+      moves.push({...s,row:r});
+    }
+    moves.push({...s,row:-1});
+  }
+  return moves;
+}
+
+function aiEval(p, m) {
+  if(m.row===-1) return -m.count*2 - (m.src==='c'&&S.ctrFirst?1:0);
+  const line=p.pat[m.row], max=m.row+1, space=max-line.length;
+  const placed=Math.min(m.count,space), overflow=m.count-placed;
+  let sc=0;
+  if(line.length+placed===max) {
+    const col=WALL[m.row].indexOf(m.color);
+    let h=0,v=0;
+    for(let x=col-1;x>=0&&p.wall[m.row][x];x--)h++;
+    for(let x=col+1;x<5&&p.wall[m.row][x];x++)h++;
+    for(let x=m.row-1;x>=0&&p.wall[x][col];x--)v++;
+    for(let x=m.row+1;x<5&&p.wall[x][col];x++)v++;
+    sc += ((h>0&&v>0)?h+v+2-1:(h>0)?h+1:(v>0)?v+1:1)*3;
+    if(p.wall[m.row].filter(c=>c).length===4) sc+=5;
+  } else sc += placed;
+  sc -= overflow*2;
+  if(m.src==='c'&&S.ctrFirst) sc-=1;
+  return sc;
+}
+
+function aiExec(p, m) {
+  if(m.src==='f') {
+    const rest=S.fac[m.fi].filter(t=>t!==m.color);
+    S.fac[m.fi]=[];
+    S.ctr.push(...rest);
+  } else {
+    S.ctr=S.ctr.filter(t=>t!==m.color);
+    if(S.ctrFirst){p.first=true;p.floor.push('first');S.ctrFirst=false;}
+  }
+  if(m.row===-1) { for(let i=0;i<m.count;i++) if(p.floor.length<7) p.floor.push(m.color); }
+  else {
+    const line=p.pat[m.row], space=m.row+1-line.length, tp=Math.min(m.count,space);
+    for(let i=0;i<tp;i++) line.push(m.color);
+    for(let i=0;i<m.count-tp;i++) if(p.floor.length<7) p.floor.push(m.color);
+  }
+}
+
+// ============ RENDER ============
+function render() {
+  renderFactories();
+  renderBoards();
+}
+
+function renderFactories() {
+  const area = document.getElementById('factories-area');
+  area.innerHTML = '';
+  const canP = S.phase==='pick' && !S.players[S.cur].isAI && !S.over;
+
+  for (let i = 0; i < S.fac.length; i++) {
+    const d = document.createElement('div');
+    const hasTiles = S.fac[i].length > 0;
+    d.className = 'factory' + (canP && hasTiles ? ' glow' : '') + (!hasTiles ? ' empty' : '');
+    d.setAttribute('data-num', i + 1);
+    for (const tile of S.fac[i]) {
+      const t = document.createElement('div');
+      t.className = `t t-${tile}`;
+      if (canP) t.onclick = () => pickTiles('factory', i, tile);
+      d.appendChild(t);
+    }
+    area.appendChild(d);
+  }
+
+  const ctr = document.createElement('div');
+  ctr.id = 'center-pool';
+  if (canP && (S.ctr.length || S.ctrFirst)) ctr.classList.add('glow');
+  if (S.ctrFirst) {
+    const ft = document.createElement('div');
+    ft.className = 't t-first';
+    ft.textContent = '1st';
+    ctr.appendChild(ft);
+  }
+  for (const tile of S.ctr) {
+    const t = document.createElement('div');
+    t.className = `t t-${tile}`;
+    if (canP) t.onclick = () => pickTiles('center', -1, tile);
+    ctr.appendChild(t);
+  }
+  area.appendChild(ctr);
+}
+
+function renderBoards() {
+  const boards = document.getElementById('boards');
+  boards.innerHTML = '';
+  const placing = S.phase === 'place' && sel;
+
+  for (let pi = 0; pi < S.players.length; pi++) {
+    const p = S.players[pi];
+    const isCur = pi === S.cur;
+    const board = document.createElement('div');
+    board.className = 'player-board' + (isCur ? ' active' : ' inactive');
+
+    // Header
+    const hdr = document.createElement('div');
+    hdr.className = 'player-header';
+    const nm = document.createElement('span');
+    nm.className = 'player-name';
+    nm.innerHTML = (isCur && !S.over ? '<span class="turn-dot"></span>' : '') + p.name + (p.isAI?' <span style="font-size:11px;color:#888">(AI)</span>':'');
+    const sc = document.createElement('span');
+    sc.className = 'player-score';
+    sc.textContent = p.score;
+    hdr.appendChild(nm);
+    hdr.appendChild(sc);
+    board.appendChild(hdr);
+
+    const content = document.createElement('div');
+    content.className = 'board-content';
+
+    // Pattern lines
+    const patDiv = document.createElement('div');
+    patDiv.className = 'pattern-lines';
+
+    for (let r = 0; r < 5; r++) {
+      const rowDiv = document.createElement('div');
+      rowDiv.className = 'p-row';
+      const max = r + 1, line = p.pat[r];
+
+      let canPlace = false;
+      if (placing && isCur) {
+        const wc = WALL[r].indexOf(sel.color);
+        canPlace = !p.wall[r][wc] && (line.length === 0 || line[0] === sel.color) && line.length < max;
+        rowDiv.classList.add(canPlace ? 'can-place' : 'cant-place');
+        if (canPlace) rowDiv.onclick = () => placeTiles(r);
+      }
+
+      for (let s = max - 1; s >= 0; s--) {
+        const slot = document.createElement('div');
+        slot.className = 'p-slot';
+        if (s < line.length) {
+          slot.classList.add('filled');
+          const t = document.createElement('div');
+          t.className = `t t-${line[s]}`;
+          slot.appendChild(t);
+        } else if (canPlace && s < line.length + sel.count && s < max) {
+          // Preview
+          slot.classList.add('preview');
+          const t = document.createElement('div');
+          t.className = `t t-${sel.color}`;
+          t.style.opacity = '0.5';
+          t.style.width = '100%';
+          t.style.height = '100%';
+          slot.appendChild(t);
+        }
+        rowDiv.appendChild(slot);
+      }
+      patDiv.appendChild(rowDiv);
+    }
+    content.appendChild(patDiv);
+
+    // Arrows
+    const arrowDiv = document.createElement('div');
+    arrowDiv.className = 'arrow-col';
+    for (let r = 0; r < 5; r++) {
+      const sp = document.createElement('span');
+      sp.textContent = '\u2192';
+      if (p.pat[r].length === r + 1) sp.classList.add('ready');
+      arrowDiv.appendChild(sp);
+    }
+    content.appendChild(arrowDiv);
+
+    // Wall
+    const wallDiv = document.createElement('div');
+    wallDiv.className = 'wall';
+    for (let r = 0; r < 5; r++) {
+      const rowDiv = document.createElement('div');
+      rowDiv.className = 'wall-row';
+      for (let c = 0; c < 5; c++) {
+        const slot = document.createElement('div');
+        const color = WALL[r][c];
+        slot.className = `w-slot w-${color}`;
+        if (p.wall[r][c]) {
+          slot.classList.add('placed');
+          const t = document.createElement('div');
+          t.className = `t t-${color}`;
+          slot.appendChild(t);
+        }
+        rowDiv.appendChild(slot);
+      }
+      wallDiv.appendChild(rowDiv);
+    }
+    content.appendChild(wallDiv);
+    board.appendChild(content);
+
+    // Floor
+    const floorArea = document.createElement('div');
+    floorArea.className = 'floor-area';
+
+    const floorHdr = document.createElement('div');
+    floorHdr.className = 'floor-header';
+    const floorLbl = document.createElement('span');
+    floorLbl.className = 'floor-label';
+    floorLbl.textContent = 'Floor Line';
+    floorHdr.appendChild(floorLbl);
+    const floorClick = document.createElement('span');
+    floorClick.className = 'floor-click';
+    if (placing && isCur) {
+      floorClick.textContent = 'Click to discard tiles here';
+      floorClick.style.display = 'inline';
+      floorClick.onclick = () => placeTiles(-1);
+    }
+    floorHdr.appendChild(floorClick);
+    floorArea.appendChild(floorHdr);
+
+    const penRow = document.createElement('div');
+    penRow.className = 'floor-penalties';
+    for (let i=0;i<7;i++) { const sp=document.createElement('span'); sp.textContent=FLOOR_PEN[i]; penRow.appendChild(sp); }
+    floorArea.appendChild(penRow);
+
+    const floorLine = document.createElement('div');
+    floorLine.className = 'floor-line' + (placing && isCur ? ' can-drop' : '');
+    if (placing && isCur) floorLine.onclick = () => placeTiles(-1);
+    for (let i=0;i<7;i++) {
+      const slot = document.createElement('div');
+      slot.className = 'floor-slot';
+      if (i < p.floor.length) {
+        const tc = p.floor[i];
+        slot.classList.add('filled');
+        const t = document.createElement('div');
+        if (tc === 'first') { t.className = 't t-first'; t.textContent = '1st'; }
+        else t.className = `t t-${tc}`;
+        slot.appendChild(t);
+      }
+      floorLine.appendChild(slot);
+    }
+    floorArea.appendChild(floorLine);
+    board.appendChild(floorArea);
+    boards.appendChild(board);
+  }
+}
+
+function setStatus(html) { document.getElementById('status').innerHTML = html; }
+
+function showGameOver() {
+  document.getElementById('overlay').classList.add('show');
+  const sorted = [...S.players].sort((a,b) => b.score - a.score);
+  document.getElementById('winner-text').textContent = `${sorted[0].name} Wins!`;
+  const cont = document.getElementById('final-scores');
+  cont.innerHTML = '';
+  sorted.forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'score-row';
+    row.innerHTML = `<span>${i===0?'\u{1F451} ':''}${p.name}</span><span class="pts">${p.score} pts</span>`;
+    cont.appendChild(row);
+  });
+  // Bonus info
+  let info = 'Bonuses: Complete row +2 | Complete column +7 | All 5 of one color +10';
+  document.getElementById('bonus-info').textContent = info;
+}
+
+// ============ SETUP ============
+function selectCard(el, groupId) {
+  document.querySelectorAll(`#${groupId} .setup-card`).forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function startGame() {
+  const np = parseInt(document.querySelector('#player-cards .sel').dataset.val);
+  const ai = document.querySelector('#mode-cards .sel').dataset.val === 'ai';
+  document.getElementById('setup').style.display = 'none';
+  const ga = document.getElementById('game-area');
+  ga.style.display = 'flex'; ga.style.flexDirection = 'column'; ga.style.alignItems = 'center'; ga.style.gap = '14px';
+
+  initState(np, ai);
+  setStatus(`<span class="step-num">1</span> ${S.players[0].name}, pick tiles from a factory or center`);
+  render();
+}
+
+function restartGame() {
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('round-summary').classList.remove('show');
+  document.getElementById('setup').style.display = 'flex';
+  document.getElementById('game-area').style.display = 'none';
+  document.getElementById('undo-btn').style.display = 'none';
+  sel = null; undoState = null;
+}
+
+// ============ TUTORIAL ============
+const TUT = [
+  {
+    title: 'Welcome to Azul!',
+    body: `<p>Azul is a tile-drafting game where you compete to build the most beautiful mosaic wall. The player with the most points wins!</p>
+    <p>The game is played in <b>rounds</b>. Each round, players take turns picking tiles and placing them on their board.</p>
+    <div class="tut-visual">
+      <div class="t t-blue" style="cursor:default"></div>
+      <div class="t t-yellow" style="cursor:default"></div>
+      <div class="t t-red" style="cursor:default"></div>
+      <div class="t t-black" style="cursor:default"></div>
+      <div class="t t-cyan" style="cursor:default"></div>
+    </div>
+    <p>There are <b>5 tile colors</b>, each with a unique symbol for easy identification.</p>`
+  },
+  {
+    title: 'Step 1: Pick Tiles',
+    body: `<p>On your turn, pick <b>all tiles of one color</b> from either:</p>
+    <p><b>A Factory Display</b> (circular) &mdash; take all tiles of your chosen color. The remaining tiles slide to the center.</p>
+    <div class="tut-visual">
+      <div style="width:100px;height:100px;background:radial-gradient(circle,#252548,#1a1a36);border:2px solid var(--accent);border-radius:50%;display:grid;grid-template-columns:1fr 1fr;place-items:center;padding:20px;gap:2px;">
+        <div class="t t-blue" style="width:26px;height:26px;cursor:default"></div>
+        <div class="t t-red" style="width:26px;height:26px;cursor:default"></div>
+        <div class="t t-blue" style="width:26px;height:26px;cursor:default"></div>
+        <div class="t t-yellow" style="width:26px;height:26px;cursor:default"></div>
+      </div>
+      <div style="font-size:24px;color:#666">\u2192</div>
+      <div style="text-align:center;font-size:12px;color:#aaa;">Take 2 blue<br>Red + Yellow go to center</div>
+    </div>
+    <p><b>The Center</b> &mdash; take all tiles of one color from the shared center pool. The <b>first</b> player to take from the center also gets the 1st player token (which costs a penalty point).</p>`
+  },
+  {
+    title: 'Step 2: Place Tiles',
+    body: `<p>After picking, place your tiles onto one of the 5 <b>pattern rows</b> on the left side of your board.</p>
+    <div class="tut-visual" style="flex-direction:column; align-items:flex-start; gap:3px;">
+      <div style="display:flex;gap:3px;justify-content:flex-end;width:100%;">
+        <div style="width:30px;height:30px;border:2px solid var(--blue-d);border-radius:4px;background:var(--blue);"></div>
+      </div>
+      <div style="display:flex;gap:3px;justify-content:flex-end;width:100%;">
+        <div style="width:30px;height:30px;border:1.5px solid #2a2a4e;border-radius:4px;background:rgba(255,255,255,.02);"></div>
+        <div style="width:30px;height:30px;border:2px solid var(--red-d);border-radius:4px;background:var(--red);"></div>
+      </div>
+      <div style="display:flex;gap:3px;justify-content:flex-end;width:100%;">
+        <div style="width:30px;height:30px;border:1.5px solid #2a2a4e;border-radius:4px;background:rgba(255,255,255,.02);"></div>
+        <div style="width:30px;height:30px;border:1.5px solid #2a2a4e;border-radius:4px;background:rgba(255,255,255,.02);"></div>
+        <div style="width:30px;height:30px;border:2px solid var(--yellow-d);border-radius:4px;background:var(--yellow);"></div>
+      </div>
+    </div>
+    <p><b>Rules:</b></p>
+    <p>&bull; Each row can only hold <b>one color</b><br>
+    &bull; Row 1 fits 1 tile, row 2 fits 2, etc.<br>
+    &bull; If a color is already on your wall in that row, you can't place it there<br>
+    &bull; Overflow tiles go to the <b>floor line</b> (penalty!)</p>`
+  },
+  {
+    title: 'Scoring: Wall Tiling',
+    body: `<p>When all factories &amp; center are empty, the round ends. Each <b>completed pattern row</b> moves one tile to the matching wall position.</p>
+    <div class="tut-visual" style="flex-direction:column; gap:8px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div style="display:flex;gap:2px;">
+          <div style="width:28px;height:28px;border:2px solid var(--blue-d);border-radius:4px;background:var(--blue);"></div>
+          <div style="width:28px;height:28px;border:2px solid var(--blue-d);border-radius:4px;background:var(--blue);"></div>
+          <div style="width:28px;height:28px;border:2px solid var(--blue-d);border-radius:4px;background:var(--blue);"></div>
+        </div>
+        <span style="color:var(--accent);font-size:20px;">\u2192</span>
+        <div style="width:28px;height:28px;border:2px solid var(--blue-d);border-radius:4px;background:var(--blue);opacity:1;box-shadow:0 0 8px var(--blue);"></div>
+      </div>
+      <div style="font-size:12px;color:#aaa;text-align:center;">3 blue tiles complete row 3 \u2192 1 tile placed on wall</div>
+    </div>
+    <p><b>Points for each placed tile:</b></p>
+    <p>&bull; <b>Isolated tile:</b> 1 point<br>
+    &bull; <b>Adjacent tiles:</b> Count all connected tiles horizontally + vertically</p>
+    <p>The <b>floor line</b> deducts points: -1, -1, -2, -2, -2, -3, -3</p>`
+  },
+  {
+    title: 'Game End & Bonuses',
+    body: `<p>The game ends when any player completes a <b>full horizontal row</b> on their wall. Then bonus points are awarded:</p>
+    <div class="tut-visual" style="flex-direction:column; gap:6px; font-size:14px;">
+      <div style="display:flex;justify-content:space-between;width:100%;padding:4px 8px;background:rgba(255,255,255,.04);border-radius:6px;">
+        <span>Complete row (5 tiles across)</span>
+        <span style="color:#4ade80;font-weight:700;">+2 pts</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;width:100%;padding:4px 8px;background:rgba(255,255,255,.04);border-radius:6px;">
+        <span>Complete column (5 tiles down)</span>
+        <span style="color:#4ade80;font-weight:700;">+7 pts</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;width:100%;padding:4px 8px;background:rgba(255,255,255,.04);border-radius:6px;">
+        <span>All 5 of one color on wall</span>
+        <span style="color:#4ade80;font-weight:700;">+10 pts</span>
+      </div>
+    </div>
+    <p><b>Tips:</b> Try to build adjacent clusters for big points. Columns are worth more than rows. Watch what your opponent is collecting!</p>`
+  },
+  {
+    title: 'Controls',
+    body: `<p><b>Playing is simple &mdash; just click!</b></p>
+    <div class="tut-visual" style="flex-direction:column; gap:8px; font-size:13px; text-align:left;">
+      <div><span class="step-num" style="display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;align-items:center;justify-content:center;margin-right:6px;">1</span> <b>Click a tile</b> in a factory or center to pick all tiles of that color</div>
+      <div><span class="step-num" style="display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;align-items:center;justify-content:center;margin-right:6px;">2</span> <b>Click a pattern row</b> (highlighted green) to place tiles, or click the floor line to discard</div>
+      <div style="margin-top:4px; color:#888;">\u2022 <b>Undo</b> button appears if you change your mind after picking<br>
+      \u2022 <b>Ghost tiles</b> preview where tiles will land<br>
+      \u2022 <b>Pulsing arrows</b> show which rows are ready to score<br>
+      \u2022 Press <span class="tut-key">?</span> anytime to reopen this tutorial</div>
+    </div>
+    <p style="color:var(--accent);font-weight:600;text-align:center;margin-top:8px;">Have fun!</p>`
+  }
+];
+
+let tutStep = 0;
+function showTutorial() {
+  tutStep = 0;
+  document.getElementById('tutorial-overlay').classList.add('show');
+  renderTut();
+}
+function renderTut() {
+  const t = TUT[tutStep];
+  document.getElementById('tut-title').innerHTML = `<span class="tut-step">${tutStep+1}</span> ${t.title}`;
+  document.getElementById('tut-body').innerHTML = t.body;
+  const dots = document.getElementById('tut-dots');
+  dots.innerHTML = '';
+  TUT.forEach((_,i) => {
+    const d = document.createElement('div');
+    d.className = 'tut-dot' + (i===tutStep?' active':'');
+    d.onclick = () => { tutStep=i; renderTut(); };
+    d.style.cursor = 'pointer';
+    dots.appendChild(d);
+  });
+  document.getElementById('tut-prev').style.visibility = tutStep===0?'hidden':'visible';
+  const nextBtn = document.getElementById('tut-next');
+  nextBtn.textContent = tutStep===TUT.length-1 ? 'Got it!' : 'Next';
+}
+function tutNext() {
+  if (tutStep < TUT.length-1) { tutStep++; renderTut(); }
+  else document.getElementById('tutorial-overlay').classList.remove('show');
+}
+function tutPrev() {
+  if (tutStep > 0) { tutStep--; renderTut(); }
+}
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (e.key === '?' || (e.key === '/' && e.shiftKey)) showTutorial();
+  if (e.key === 'Escape') {
+    document.getElementById('tutorial-overlay').classList.remove('show');
+  }
+  if (e.key === 'z' && (e.ctrlKey || e.metaKey)) undoPick();
+});
+</script>
+</body>
+</html>

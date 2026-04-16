@@ -233,6 +233,29 @@
     accent-color: var(--gold-d);
   }
 
+  /* Segmented speed control */
+  .am-speed { display: flex; gap: 4px; background: rgba(139,90,43,.15); border: 1px solid var(--parchment-sh); border-radius: 8px; padding: 3px; }
+  .am-speed-btn {
+    flex: 1;
+    padding: 5px 8px;
+    background: transparent;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--wood-d);
+    transition: .15s;
+  }
+  .am-speed-btn:hover { background: rgba(201,169,97,.2); }
+  .am-speed-btn.active {
+    background: linear-gradient(180deg, #ffe9a8 0%, var(--gold) 100%);
+    color: var(--ink);
+    box-shadow: inset 0 -1px 2px rgba(139,90,43,.3), 0 1px 2px rgba(0,0,0,.1);
+    font-weight: 700;
+  }
+
   /* ===== FACTORIES — Blue & white porcelain plates ===== */
   #factories-section { text-align: center; margin-bottom: 4px; }
   #factories-section .section-label {
@@ -893,6 +916,13 @@
       <input type="range" id="am-vol" min="0" max="100" value="50" oninput="setVolume(this.value)">
     </div>
     <div class="am-divider"></div>
+    <div class="am-label">Scoring Speed</div>
+    <div class="am-speed" id="am-speed">
+      <button data-speed="normal" class="am-speed-btn" onclick="setScoringSpeed('normal')">Normal</button>
+      <button data-speed="fast" class="am-speed-btn active" onclick="setScoringSpeed('fast')">Fast</button>
+      <button data-speed="instant" class="am-speed-btn" onclick="setScoringSpeed('instant')">Instant</button>
+    </div>
+    <div class="am-divider"></div>
     <div class="am-label">Classical Piece</div>
     <div class="am-tracks" id="am-tracks"></div>
   </div>
@@ -1467,9 +1497,23 @@ function endTurn() {
   if (S.players[S.cur].isAI && !S.over) scheduleAI(500);
 }
 
-const wait = ms => new Promise(r => setTimeout(r, ms));
+// Scoring animation speed: 'normal' | 'fast' | 'instant'
+let scoringSpeed = 'fast';
+const SPEED_MULT = { normal: 1, fast: 0.35, instant: 0 };
+const wait = ms => {
+  const mult = SPEED_MULT[scoringSpeed] ?? 1;
+  if (mult === 0) return Promise.resolve();
+  return new Promise(r => setTimeout(r, ms * mult));
+};
+function setScoringSpeed(s) {
+  scoringSpeed = s;
+  document.querySelectorAll('#am-speed .am-speed-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.speed === s);
+  });
+}
 
 async function showBanner(text, sub, duration = 1400) {
+  if (scoringSpeed === 'instant') return;
   const banner = document.getElementById('scoring-banner');
   banner.innerHTML = text + (sub ? `<span class="banner-sub">${sub}</span>` : '');
   banner.className = '';
@@ -1490,6 +1534,7 @@ function getWallSlot(pi, row, col) {
 }
 
 function focusPlayer(pi) {
+  if (scoringSpeed === 'instant') return;
   document.querySelectorAll('.player-board').forEach((b, i) => {
     b.classList.remove('scoring-focus', 'scoring-dim');
     b.classList.add(i === pi ? 'scoring-focus' : 'scoring-dim');
@@ -1533,6 +1578,7 @@ async function flyTile(fromEl, toEl, color) {
 }
 
 function drawChainLines(pi, row, col, adj) {
+  if (scoringSpeed === 'instant') return;
   const svgNs = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(svgNs, 'svg');
   svg.setAttribute('class', 'chain-overlay');
@@ -1559,6 +1605,7 @@ function drawChainLines(pi, row, col, adj) {
 }
 
 function showTally(anchor, text) {
+  if (scoringSpeed === 'instant') return;
   const r = anchor.getBoundingClientRect();
   const el = document.createElement('div');
   el.className = 'tally-ticker';
@@ -1570,6 +1617,7 @@ function showTally(anchor, text) {
 }
 
 function floatPoints(anchorEl, text, cls = 'pos') {
+  if (scoringSpeed === 'instant') return;
   const rect = anchorEl.getBoundingClientRect();
   const el = document.createElement('div');
   el.className = `points-pop ${cls}`;
@@ -1592,6 +1640,7 @@ function popScore(pi) {
 }
 
 function showCompleteBadge(anchor, text) {
+  if (scoringSpeed === 'instant') return;
   const r = anchor.getBoundingClientRect();
   const el = document.createElement('div');
   el.className = 'line-complete';
@@ -1614,7 +1663,7 @@ async function endRound() {
     hadFirst: p.floor.includes('first'),
   }));
 
-  Snd.SFX.roundEnd();
+  if (scoringSpeed !== 'instant') Snd.SFX.roundEnd();
   await showBanner(`Round ${S.round}`, 'Scoring begins', 1300);
   if (stale()) return;
 
@@ -1635,39 +1684,41 @@ async function endRound() {
       const color = p.pat[r][0];
       const col = WALL[r].indexOf(color);
 
-      // Capture pattern slot BEFORE we mutate
-      const fromSlot = getPatternSlot(pi, r, 0); // rightmost is the active one
-      const toSlot = getWallSlot(pi, r, col);
-      const fromRect = fromSlot.getBoundingClientRect();
-      const toRect = toSlot.getBoundingClientRect();
+      if (scoringSpeed === 'instant') {
+        // Fast path: no flight animation, just commit
+        p.pat[r] = [];
+        p.wall[r][col] = true;
+      } else {
+        // Capture pattern slot BEFORE we mutate
+        const fromSlot = getPatternSlot(pi, r, 0);
+        const toSlot = getWallSlot(pi, r, col);
+        const fromRect = fromSlot.getBoundingClientRect();
+        const toRect = toSlot.getBoundingClientRect();
 
-      // Hide the source tiles visually: mutate pattern line to empty BEFORE flight
-      p.pat[r] = [];
+        p.pat[r] = [];
+        render();
+
+        const fly = document.createElement('div');
+        fly.className = `t t-${color} fly-tile`;
+        fly.style.left = fromRect.left + 'px';
+        fly.style.top = fromRect.top + 'px';
+        fly.style.width = fromRect.width + 'px';
+        fly.style.height = fromRect.height + 'px';
+        document.body.appendChild(fly);
+        void fly.offsetWidth;
+        const dx = toRect.left - fromRect.left;
+        const dy = toRect.top - fromRect.top;
+        fly.style.transform = `translate(${dx}px, ${dy}px) scale(1.2) rotate(8deg)`;
+        fly.style.filter = 'brightness(1.25) drop-shadow(0 8px 14px rgba(0,0,0,.6))';
+        await wait(500);
+        fly.style.transform = `translate(${dx}px, ${dy}px) scale(1) rotate(0)`;
+        fly.style.filter = 'none';
+        await wait(80);
+
+        p.wall[r][col] = true;
+        fly.remove();
+      }
       render();
-
-      // Fly the tile from old pattern slot position to new wall slot position
-      // We stored rects, so we can animate independently of DOM re-render
-      const fly = document.createElement('div');
-      fly.className = `t t-${color} fly-tile`;
-      fly.style.left = fromRect.left + 'px';
-      fly.style.top = fromRect.top + 'px';
-      fly.style.width = fromRect.width + 'px';
-      fly.style.height = fromRect.height + 'px';
-      document.body.appendChild(fly);
-      void fly.offsetWidth;
-      const dx = toRect.left - fromRect.left;
-      const dy = toRect.top - fromRect.top;
-      fly.style.transform = `translate(${dx}px, ${dy}px) scale(1.2) rotate(8deg)`;
-      fly.style.filter = 'brightness(1.25) drop-shadow(0 8px 14px rgba(0,0,0,.6))';
-      await wait(500);
-      fly.style.transform = `translate(${dx}px, ${dy}px) scale(1) rotate(0)`;
-      fly.style.filter = 'none';
-      await wait(80);
-
-      // Commit to wall and render
-      p.wall[r][col] = true;
-      render();
-      fly.remove();
 
       // Pulse the landed tile
       const landed = getWallSlot(pi, r, col);
@@ -1682,21 +1733,21 @@ async function endRound() {
       for (let x = r+1; x < 5 && p.wall[x][col]; x++) { v++; adj.push([x,col]); }
       const pts = (h>0&&v>0) ? h+v+2-1 : (h>0) ? h+1 : (v>0) ? v+1 : 1;
 
-      if (adj.length > 0) {
-        // Draw chain lines and flash adjacent tiles
+      if (scoringSpeed !== 'instant' && adj.length > 0) {
         drawChainLines(pi, r, col, adj);
         for (const [ar, ac] of adj) getWallSlot(pi, ar, ac).classList.add('adj-chain');
-        // Running breakdown
         const breakdown = (h>0&&v>0) ? `${h+1} \u2194  \u00D7  ${v+1} \u2195` : (h>0) ? `${h+1} in a row` : `${v+1} in a column`;
         showTally(landed, breakdown);
         await wait(700);
-      } else {
+      } else if (scoringSpeed !== 'instant') {
         await wait(300);
       }
 
       // Points float + score pop
       floatPoints(landed, `+${pts}`, 'pos');
-      if (pts >= 4) Snd.SFX.scoreBig(); else Snd.SFX.scorePoint();
+      if (scoringSpeed !== 'instant') {
+        if (pts >= 4) Snd.SFX.scoreBig(); else Snd.SFX.scorePoint();
+      }
       p.score += pts;
       details[pi].wallPts += pts;
       popScore(pi);
@@ -1705,7 +1756,7 @@ async function endRound() {
       const rowDone = p.wall[r].every(c => c);
       let colFull = true;
       for (let rr = 0; rr < 5; rr++) if (!p.wall[rr][col]) { colFull = false; break; }
-      if (rowDone || colFull) Snd.SFX.rowComplete();
+      if ((rowDone || colFull) && scoringSpeed !== 'instant') Snd.SFX.rowComplete();
       if (rowDone && colFull) {
         showCompleteBadge(landed, 'Row + Column!');
       } else if (rowDone) {
@@ -1727,12 +1778,12 @@ async function endRound() {
         const pen = FLOOR_PEN[i];
         totalPen += pen;
         const slot = floorEl.children[i];
-        if (slot) {
+        if (slot && scoringSpeed !== 'instant') {
           slot.classList.add('flicking');
           const tileEl = slot.querySelector('.t');
           if (tileEl) floatPoints(tileEl, `${pen}`, 'neg small');
         }
-        Snd.SFX.penalty();
+        if (scoringSpeed !== 'instant') Snd.SFX.penalty();
         await wait(260);
       }
 
@@ -1784,7 +1835,7 @@ async function animateFinalBonuses(details) {
         for (let c = 0; c < 5; c++) getWallSlot(pi, r, c).classList.add('adj-chain');
         floatPoints(anchor, '+2', 'pos');
         showCompleteBadge(anchor, 'Row +2');
-        Snd.SFX.scoreBig();
+        if (scoringSpeed !== 'instant') Snd.SFX.scoreBig();
         popScore(pi);
         await wait(750);
       }
@@ -1798,7 +1849,7 @@ async function animateFinalBonuses(details) {
         for (let r = 0; r < 5; r++) getWallSlot(pi, r, c).classList.add('adj-chain');
         floatPoints(anchor, '+7', 'pos');
         showCompleteBadge(anchor, 'Column +7');
-        Snd.SFX.rowComplete();
+        if (scoringSpeed !== 'instant') Snd.SFX.rowComplete();
         popScore(pi);
         await wait(850);
       }
@@ -1820,7 +1871,7 @@ async function animateFinalBonuses(details) {
         const anchor = getWallSlot(pi, lastR, lastC);
         floatPoints(anchor, '+10', 'pos');
         showCompleteBadge(anchor, `All ${col}! +10`);
-        Snd.SFX.victory();
+        if (scoringSpeed !== 'instant') Snd.SFX.victory();
         popScore(pi);
         await wait(950);
       }

@@ -104,6 +104,23 @@
   .t-first::before { background: linear-gradient(135deg, rgba(255,255,255,.4) 0%, transparent 50%); }
   .t-first::after { display: none; }
 
+  /* First-player token on floor shows a small penalty badge */
+  .floor-slot.filled .t-first::before {
+    content: "\2212 1";
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 4px;
+    border-radius: 6px;
+    line-height: 1;
+    border: 1px solid #fff;
+    box-shadow: 0 1px 2px rgba(0,0,0,.4);
+  }
+
   .t.highlight { box-shadow: 0 0 0 3px #fff, 0 0 22px rgba(255,230,150,.7); transform: scale(1.15); z-index: 3; }
 
   /* ===== HEADER — Ornate title card ===== */
@@ -145,6 +162,76 @@
   .header-btns { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); display: flex; gap: 8px; }
   .icon-btn { background: rgba(0,0,0,.25); border: 1px solid var(--gold-d); color: var(--gold); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: .15s; font-family: 'Cinzel', serif; font-weight: 700; }
   .icon-btn:hover { background: rgba(201,169,97,.2); color: #fff; }
+  .icon-btn.on { background: rgba(201,169,97,.35); color: #fff; box-shadow: inset 0 0 0 1px var(--gold); }
+
+  /* ===== AUDIO MENU ===== */
+  #audio-menu {
+    position: absolute;
+    top: 56px;
+    right: 16px;
+    width: 260px;
+    background: radial-gradient(ellipse at 30% 20%, #f5ebcf 0%, var(--parchment) 50%, var(--parchment-d) 100%);
+    color: var(--ink);
+    border-radius: 10px;
+    padding: 14px 18px;
+    box-shadow: 0 0 0 3px var(--wood), 0 0 0 5px var(--wood-d), 0 0 0 6px var(--gold), 0 12px 30px rgba(0,0,0,.6);
+    z-index: 90;
+    display: none;
+    font-family: 'Cinzel', serif;
+    animation: fadeIn .2s ease;
+  }
+  #audio-menu.show { display: block; }
+  #audio-menu .am-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 13px; letter-spacing: 1px; }
+  #audio-menu .am-row label { color: var(--wood-d); }
+  #audio-menu .am-divider { height: 1px; background: linear-gradient(90deg, transparent, var(--parchment-sh), transparent); margin: 10px 0; }
+  #audio-menu .am-label { font-size: 10px; letter-spacing: 3px; color: var(--wood-d); opacity: .7; text-transform: uppercase; margin-bottom: 6px; }
+  #audio-menu .am-tracks { display: flex; flex-direction: column; gap: 4px; }
+  #audio-menu .am-track {
+    padding: 6px 10px;
+    border: 1px solid var(--parchment-sh);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    color: var(--ink);
+    background: rgba(255,255,255,.3);
+    transition: .15s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  #audio-menu .am-track:hover { background: rgba(201,169,97,.2); }
+  #audio-menu .am-track.active { background: linear-gradient(180deg, #ffe9a8 0%, var(--gold) 100%); border-color: var(--gold-d); color: var(--ink); }
+  #audio-menu .am-track .am-composer { font-size: 10px; font-style: italic; opacity: .7; }
+  #audio-menu .am-track.active .am-composer { opacity: .9; }
+
+  /* Toggle switch */
+  .am-switch {
+    width: 36px; height: 20px;
+    background: rgba(139,90,43,.3);
+    border-radius: 10px;
+    position: relative;
+    cursor: pointer;
+    transition: background .15s;
+    border: 1px solid var(--parchment-sh);
+  }
+  .am-switch span {
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 14px; height: 14px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform .2s cubic-bezier(.3,.8,.5,1.3), background .15s;
+    box-shadow: 0 1px 2px rgba(0,0,0,.3);
+  }
+  .am-switch.on { background: var(--gold); }
+  .am-switch.on span { transform: translateX(16px); }
+
+  #audio-menu input[type=range] {
+    width: 140px;
+    accent-color: var(--gold-d);
+  }
 
   /* ===== FACTORIES — Blue & white porcelain plates ===== */
   #factories-section { text-align: center; margin-bottom: 4px; }
@@ -390,6 +477,185 @@
   .w-slot.placed.new-tile { animation: wallPop .5s ease; }
   @keyframes wallPop { 0% { transform: scale(0) rotate(180deg); opacity: 0; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
 
+  /* ===== SCORING ANIMATIONS ===== */
+  .player-board.scoring-focus {
+    box-shadow:
+      0 0 0 4px var(--wood),
+      0 0 0 6px var(--wood-d),
+      0 0 0 7px var(--gold),
+      inset 0 0 30px rgba(139,90,43,.12),
+      0 0 60px rgba(201,169,97,.6),
+      0 8px 22px rgba(0,0,0,.45);
+    transform: scale(1.01);
+  }
+  .player-board.scoring-dim { opacity: .45; filter: saturate(.7); transform: scale(.98); }
+  .player-board { transition: box-shadow .35s, opacity .35s, transform .35s, filter .35s; }
+
+  /* Scoring tile — glows with a pulsing gold aura */
+  .w-slot.scoring {
+    z-index: 5;
+    animation: scoringPulse 1.2s ease;
+  }
+  @keyframes scoringPulse {
+    0% { box-shadow: 0 0 0 0 rgba(255,215,120,.95), 0 2px 4px rgba(0,0,0,.3); }
+    60% { box-shadow: 0 0 0 14px rgba(255,215,120,0), 0 2px 4px rgba(0,0,0,.3); }
+    100% { box-shadow: inset 0 0 0 1px rgba(0,0,0,.2), 0 2px 4px rgba(0,0,0,.3); }
+  }
+
+  /* Adjacency chain — glowing gold connection */
+  .w-slot.adj-chain {
+    animation: adjChain 1s ease;
+    position: relative;
+    z-index: 4;
+  }
+  @keyframes adjChain {
+    0% { filter: brightness(1); }
+    30% { filter: brightness(1.35) drop-shadow(0 0 10px #ffd87a); }
+    100% { filter: brightness(1); }
+  }
+
+  /* Chain SVG overlay */
+  .chain-overlay {
+    position: fixed;
+    pointer-events: none;
+    z-index: 60;
+    overflow: visible;
+  }
+  .chain-overlay line {
+    stroke: #ffd87a;
+    stroke-width: 4;
+    stroke-linecap: round;
+    filter: drop-shadow(0 0 6px #ffd87a) drop-shadow(0 0 12px rgba(255,215,120,.6));
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+    animation: drawChain .5s ease forwards;
+  }
+  @keyframes drawChain {
+    to { stroke-dashoffset: 0; }
+  }
+
+  /* Running total ticker above scoring tile */
+  .tally-ticker {
+    position: fixed;
+    font-family: 'Cinzel', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    background: linear-gradient(180deg, #ffe9a8 0%, var(--gold) 100%);
+    border: 2px solid var(--gold-d);
+    border-radius: 14px;
+    padding: 3px 12px;
+    pointer-events: none;
+    z-index: 260;
+    box-shadow: 0 3px 10px rgba(0,0,0,.5);
+    white-space: nowrap;
+    animation: tallyIn .25s ease, tallyOut .4s ease 1.2s forwards;
+  }
+  @keyframes tallyIn { 0% { transform: translate(-50%, 20%) scale(.5); opacity: 0; } 100% { transform: translate(-50%, -130%) scale(1); opacity: 1; } }
+  @keyframes tallyOut { to { transform: translate(-50%, -200%) scale(.9); opacity: 0; } }
+
+  /* Flying tile for pattern -> wall migration */
+  .fly-tile {
+    position: fixed;
+    z-index: 80;
+    pointer-events: none;
+    transition: transform .55s cubic-bezier(.5,-.2,.3,1.3), filter .55s ease;
+    will-change: transform;
+  }
+
+  /* Floor tile being flicked off */
+  .floor-slot.flicking > .t {
+    animation: flickOff .55s cubic-bezier(.4,0,.8,.5) forwards;
+    z-index: 5;
+  }
+  @keyframes flickOff {
+    0% { transform: translateY(0) rotate(0); opacity: 1; }
+    100% { transform: translateY(90px) rotate(25deg); opacity: 0; }
+  }
+
+  /* Floating point popup */
+  .points-pop {
+    position: fixed;
+    font-family: 'Cinzel', serif;
+    font-size: 28px;
+    font-weight: 900;
+    pointer-events: none;
+    z-index: 250;
+    text-shadow: 0 2px 6px rgba(0,0,0,.8), 0 0 16px currentColor;
+    animation: pointsFloat 1.3s cubic-bezier(.2,.7,.3,1) forwards;
+    white-space: nowrap;
+  }
+  .points-pop.pos { color: #ffd87a; }
+  .points-pop.neg { color: #ff6b7a; }
+  .points-pop.small { font-size: 18px; }
+  @keyframes pointsFloat {
+    0% { transform: translate(-50%, -50%) scale(.3); opacity: 0; }
+    20% { transform: translate(-50%, -70%) scale(1.4); opacity: 1; }
+    55% { transform: translate(-50%, -115%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -180%) scale(.85); opacity: 0; }
+  }
+
+  /* Row/column complete celebration */
+  .line-complete {
+    position: fixed;
+    font-family: 'Cinzel', serif;
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    color: #fff;
+    background: linear-gradient(90deg, var(--accent), #ff8c5a);
+    border: 2px solid #fff;
+    border-radius: 20px;
+    padding: 4px 14px;
+    pointer-events: none;
+    z-index: 270;
+    text-transform: uppercase;
+    text-shadow: 0 1px 2px rgba(0,0,0,.5);
+    box-shadow: 0 0 20px rgba(255,140,90,.8), 0 4px 12px rgba(0,0,0,.5);
+    animation: lineCompleteAnim 1.8s ease forwards;
+  }
+  @keyframes lineCompleteAnim {
+    0% { transform: translate(-50%, 0) scale(0) rotate(-10deg); opacity: 0; }
+    15% { transform: translate(-50%, -40px) scale(1.3) rotate(5deg); opacity: 1; }
+    30% { transform: translate(-50%, -40px) scale(1) rotate(0); }
+    80% { transform: translate(-50%, -40px) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -80px) scale(.9); opacity: 0; }
+  }
+
+  /* Banner */
+  #scoring-banner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(ellipse, #f5ebcf 0%, var(--parchment) 50%, var(--parchment-d) 100%);
+    color: var(--wood-d);
+    font-family: 'Cinzel', serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    padding: 18px 44px;
+    border-radius: 10px;
+    box-shadow: 0 0 0 4px var(--wood), 0 0 0 6px var(--wood-d), 0 0 0 7px var(--gold), 0 14px 40px rgba(0,0,0,.6);
+    z-index: 180;
+    display: none;
+    text-align: center;
+  }
+  #scoring-banner.show { display: block; animation: bannerInOut 1.5s ease forwards; }
+  #scoring-banner .banner-sub { display: block; font-size: 13px; letter-spacing: 2px; opacity: .7; margin-top: 4px; font-style: italic; text-transform: none; }
+  @keyframes bannerInOut {
+    0% { transform: translate(-50%, -50%) scale(.6); opacity: 0; }
+    20% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1.05); opacity: 0; }
+  }
+  #scoring-banner.sticky { animation: bannerIn .35s ease forwards; }
+  @keyframes bannerIn {
+    0% { transform: translate(-50%, -50%) scale(.6); opacity: 0; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  }
+
   /* Floor */
   .floor-area { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--parchment-sh); position: relative; }
   .floor-area::before {
@@ -608,8 +874,27 @@
     <button id="undo-btn" onclick="undoPick()">Undo</button>
   </div>
   <div class="header-btns">
+    <button class="icon-btn" id="audio-btn" onclick="toggleAudioMenu(event)" title="Audio settings">&#x266A;</button>
     <button class="icon-btn" onclick="showTutorial()" title="How to play">?</button>
     <button class="icon-btn" onclick="restartGame()" title="New game">&#x21bb;</button>
+  </div>
+  <!-- Audio settings panel -->
+  <div id="audio-menu">
+    <div class="am-row am-toggle">
+      <label>Sound</label>
+      <div class="am-switch" id="am-sfx-switch" onclick="toggleSfx()"><span></span></div>
+    </div>
+    <div class="am-row am-toggle">
+      <label>Music</label>
+      <div class="am-switch" id="am-music-switch" onclick="toggleMusic()"><span></span></div>
+    </div>
+    <div class="am-row">
+      <label>Volume</label>
+      <input type="range" id="am-vol" min="0" max="100" value="50" oninput="setVolume(this.value)">
+    </div>
+    <div class="am-divider"></div>
+    <div class="am-label">Classical Piece</div>
+    <div class="am-tracks" id="am-tracks"></div>
   </div>
 </div>
 
@@ -633,6 +918,15 @@
       <div class="setup-cards" id="mode-cards">
         <div class="setup-card sel" data-val="ai" onclick="selectCard(this,'mode-cards')"><div class="num">vs AI</div><div class="desc">Play solo</div></div>
         <div class="setup-card" data-val="human" onclick="selectCard(this,'mode-cards')"><div class="num">Hot Seat</div><div class="desc">Pass & play</div></div>
+      </div>
+    </div>
+
+    <div class="setup-row" id="difficulty-row">
+      <label>AI Difficulty</label>
+      <div class="setup-cards" id="diff-cards">
+        <div class="setup-card" data-val="easy" onclick="selectCard(this,'diff-cards')"><div class="num">Easy</div><div class="desc">Greedy</div></div>
+        <div class="setup-card sel" data-val="medium" onclick="selectCard(this,'diff-cards')"><div class="num">Medium</div><div class="desc">Strategic</div></div>
+        <div class="setup-card" data-val="hard" onclick="selectCard(this,'diff-cards')"><div class="num">Hard</div><div class="desc">Lookahead</div></div>
       </div>
     </div>
 
@@ -665,6 +959,9 @@
   </div>
 </div>
 
+<!-- ===== SCORING BANNER ===== -->
+<div id="scoring-banner"></div>
+
 <!-- ===== ROUND SUMMARY ===== -->
 <div id="round-summary">
   <div class="summary-card">
@@ -690,6 +987,350 @@
 </div>
 
 <script>
+// ============ AUDIO ENGINE ============
+const Snd = (() => {
+  let ctx = null, masterGain = null, musicGain = null, sfxGain = null;
+  let musicEnabled = false, sfxEnabled = true, volume = 0.5;
+  let currentTrackIdx = 0;
+  let loopTimer = null;
+  let activeVoices = [];
+
+  // Convert note name (e.g. "A4", "F#5") to frequency
+  function noteToFreq(n) {
+    if (!n || n === '-') return 0;
+    const m = n.match(/^([A-G])(#|b)?(-?\d)$/);
+    if (!m) return 0;
+    const steps = { C:0, D:2, E:4, F:5, G:7, A:9, B:11 }[m[1]];
+    const acc = m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0;
+    const oct = parseInt(m[3]);
+    const midi = (oct + 1) * 12 + steps + acc;
+    return 440 * Math.pow(2, (midi - 69) / 12);
+  }
+
+  function ensureCtx() {
+    if (ctx) return;
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      ctx = new AC();
+      masterGain = ctx.createGain();
+      masterGain.gain.value = volume;
+      masterGain.connect(ctx.destination);
+      musicGain = ctx.createGain();
+      musicGain.gain.value = 0.35;
+      musicGain.connect(masterGain);
+      sfxGain = ctx.createGain();
+      sfxGain.gain.value = 0.7;
+      sfxGain.connect(masterGain);
+    } catch (e) { console.warn('Audio unavailable', e); }
+  }
+
+  // Synthesize a piano-like note
+  function playNote(freq, duration, dest, velocity = 1, type = 'piano') {
+    if (!freq || !ctx) return;
+    const t0 = ctx.currentTime;
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+
+    if (type === 'piano') {
+      osc1.type = 'triangle';
+      osc2.type = 'sine';
+      osc2.frequency.value = freq * 2; // octave up harmonic
+      filter.type = 'lowpass';
+      filter.frequency.value = 2800;
+      filter.Q.value = 0.6;
+    } else if (type === 'bell') {
+      osc1.type = 'sine';
+      osc2.type = 'sine';
+      osc2.frequency.value = freq * 3.01;
+      filter.type = 'lowpass';
+      filter.frequency.value = 5000;
+    } else {
+      osc1.type = 'triangle';
+      osc2.type = 'sine';
+      osc2.frequency.value = freq * 2;
+      filter.type = 'lowpass';
+      filter.frequency.value = 3000;
+    }
+    osc1.frequency.value = freq;
+
+    // ADSR
+    const attack = 0.008;
+    const decay = 0.15;
+    const sustain = 0.3 * velocity;
+    const release = Math.min(0.3, duration * 0.5);
+    gain.gain.setValueAtTime(0, t0);
+    gain.gain.linearRampToValueAtTime(velocity, t0 + attack);
+    gain.gain.exponentialRampToValueAtTime(Math.max(0.001, sustain), t0 + attack + decay);
+    gain.gain.setValueAtTime(Math.max(0.001, sustain), t0 + duration - release);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+
+    const mix = ctx.createGain();
+    mix.gain.value = 0.6;
+    osc1.connect(mix);
+    const harmGain = ctx.createGain();
+    harmGain.gain.value = 0.25;
+    osc2.connect(harmGain);
+    harmGain.connect(mix);
+    mix.connect(filter);
+    filter.connect(gain);
+    gain.connect(dest || masterGain);
+
+    osc1.start(t0);
+    osc2.start(t0);
+    osc1.stop(t0 + duration + 0.05);
+    osc2.stop(t0 + duration + 0.05);
+
+    const voice = { osc1, osc2, gain, stop: (when) => {
+      const t = when || ctx.currentTime;
+      try {
+        gain.gain.cancelScheduledValues(t);
+        gain.gain.setValueAtTime(gain.gain.value, t);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.1);
+        osc1.stop(t + 0.12);
+        osc2.stop(t + 0.12);
+      } catch(e){}
+    }};
+    activeVoices.push(voice);
+    setTimeout(() => { activeVoices = activeVoices.filter(v => v !== voice); }, (duration + 0.2) * 1000);
+    return voice;
+  }
+
+  // ============ TRACKS ============
+  // Note arrays: [note, duration in beats, velocity]. Use '-' for rest.
+  const TRACKS = [
+    {
+      id: 'minuet',
+      name: 'Minuet in G',
+      composer: 'J.S. Bach',
+      bpm: 120,
+      beat: 0.5, // seconds per beat
+      notes: [
+        // Phrase 1
+        ['D5',1],['G4',.5],['A4',.5],['B4',.5],['C5',.5],
+        ['D5',1],['G4',1],
+        ['E5',1],['C5',.5],['D5',.5],['E5',.5],['F#5',.5],
+        ['G5',1],['G4',1],
+        ['C5',1],['D5',.5],['C5',.5],['B4',.5],['A4',.5],
+        ['B4',1],['C5',.5],['B4',.5],['A4',.5],['G4',.5],
+        ['F#4',1],['G4',.5],['A4',.5],['B4',.5],['G4',.5],
+        ['A4',2],
+        // Phrase 2 (repeat with ending variation)
+        ['D5',1],['G4',.5],['A4',.5],['B4',.5],['C5',.5],
+        ['D5',1],['G4',1],
+        ['E5',1],['C5',.5],['D5',.5],['E5',.5],['F#5',.5],
+        ['G5',1],['G4',1],
+        ['C5',1],['D5',.5],['C5',.5],['B4',.5],['A4',.5],
+        ['B4',1],['C5',.5],['B4',.5],['A4',.5],['G4',.5],
+        ['F#4',.5],['G4',.5],['A4',.5],['F#4',.5],['G4',.5],['A4',.5],
+        ['G4',2],
+      ],
+    },
+    {
+      id: 'canon',
+      name: 'Canon in D',
+      composer: 'Pachelbel',
+      bpm: 60,
+      beat: 1.0,
+      notes: [
+        // Bassline pattern (D-A-Bm-F#m-G-D-G-A) with melody on top
+        ['F#5',1],['E5',1],['D5',1],['C#5',1],
+        ['B4',1],['A4',1],['B4',1],['C#5',1],
+        ['D5',1],['C#5',1],['B4',1],['A4',1],
+        ['G4',1],['F#4',1],['G4',1],['E4',1],
+        ['F#4',.5],['E4',.5],['F#4',.5],['F#5',.5],['E5',.5],['D5',.5],['E5',.5],['F#5',.5],
+        ['D5',1],['F#5',1],['E5',1],['D5',1],
+        ['C#5',.5],['B4',.5],['A4',.5],['B4',.5],['C#5',.5],['D5',.5],['E5',.5],['F#5',.5],
+        ['A5',1],['G5',1],['F#5',1],['E5',1],
+      ],
+    },
+    {
+      id: 'gymnopedie',
+      name: 'Gymnopédie No. 1',
+      composer: 'Erik Satie',
+      bpm: 66,
+      beat: 0.9,
+      notes: [
+        // Just the main melodic motif, simplified
+        ['D5',1.5],['A4',1.5],['F#5',3],
+        ['E5',1.5],['A4',1.5],['C#5',3],
+        ['D5',1.5],['A4',1.5],['G5',3],
+        ['F#5',1.5],['E5',1.5],['D5',3],
+        ['-',1.5],
+        ['F#5',1.5],['A4',1.5],['D5',3],
+        ['E5',1.5],['A4',1.5],['C#5',3],
+        ['D5',1.5],['F#5',1.5],['E5',3],
+        ['D5',6],
+      ],
+    },
+    {
+      id: 'eine',
+      name: 'Eine kleine Nachtmusik',
+      composer: 'Mozart',
+      bpm: 140,
+      beat: 0.43,
+      notes: [
+        ['G4',.5],['D5',.5],['G4',.5],['D5',.5],
+        ['G4',.25],['D5',.25],['G4',.25],['B4',.25],['G5',1],
+        ['F5',.5],['D5',.5],['F5',.5],['D5',.5],
+        ['F5',.25],['D5',.25],['F5',.25],['A4',.25],['F5',1],
+        ['E5',.5],['C5',.5],['E5',.5],['C5',.5],
+        ['E5',.25],['C5',.25],['E5',.25],['G4',.25],['E5',1],
+        ['D5',.5],['C5',.5],['B4',.5],['A4',.5],
+        ['G4',.5],['B4',.5],['D5',1],
+        ['G4',.5],['D5',.5],['G4',.5],['D5',.5],
+        ['G4',.25],['D5',.25],['G4',.25],['B4',.25],['G5',1],
+      ],
+    },
+    {
+      id: 'claire',
+      name: 'Clair de Lune',
+      composer: 'Debussy',
+      bpm: 72,
+      beat: 0.83,
+      notes: [
+        ['D#5',1.5],['F5',.5],['A#5',1],['D#6',1],['C6',1.5],
+        ['A#5',.5],['G#5',1],['F5',1],['D#5',2],
+        ['D#5',1.5],['F5',.5],['A#5',1],['D#6',1],['F6',1.5],
+        ['D#6',.5],['C6',1],['A#5',1],['G#5',2],
+        ['F5',1],['G#5',1],['A#5',1],['C6',1],
+        ['D#6',1.5],['C6',.5],['A#5',1],['G#5',1],
+        ['F5',2],['D#5',2],
+      ],
+    },
+  ];
+
+  let currentStep = 0;
+  function playNextStep() {
+    if (!musicEnabled || !ctx) return;
+    const track = TRACKS[currentTrackIdx];
+    const ev = track.notes[currentStep % track.notes.length];
+    currentStep++;
+    const [note, beats, vel=0.6] = ev;
+    const dur = beats * track.beat;
+    if (note !== '-') {
+      const f = noteToFreq(note);
+      playNote(f, dur * 0.95, musicGain, vel, 'piano');
+      // Add subtle lower harmonic for richness (fifth below)
+      if (beats >= 1) playNote(f * 0.5, dur * 0.95, musicGain, vel * 0.35, 'piano');
+    }
+    // Gap between loops
+    let nextMs = dur * 1000;
+    if (currentStep % track.notes.length === 0) nextMs += 1400;
+    loopTimer = setTimeout(playNextStep, nextMs);
+  }
+
+  function startMusic() {
+    ensureCtx();
+    if (!ctx) return;
+    if (ctx.state === 'suspended') ctx.resume();
+    musicEnabled = true;
+    currentStep = 0;
+    stopLoop();
+    playNextStep();
+    document.getElementById('am-music-switch').classList.add('on');
+    document.getElementById('audio-btn').classList.add('on');
+  }
+  function stopMusic() {
+    musicEnabled = false;
+    stopLoop();
+    // Fade out existing notes
+    if (ctx && musicGain) {
+      const t = ctx.currentTime;
+      musicGain.gain.cancelScheduledValues(t);
+      musicGain.gain.setValueAtTime(musicGain.gain.value, t);
+      musicGain.gain.linearRampToValueAtTime(0, t + 0.3);
+      setTimeout(() => { if (ctx && musicGain) musicGain.gain.value = 0.35; }, 350);
+    }
+    document.getElementById('am-music-switch').classList.remove('on');
+    if (!sfxEnabled) document.getElementById('audio-btn').classList.remove('on');
+  }
+  function stopLoop() { if (loopTimer) { clearTimeout(loopTimer); loopTimer = null; } }
+
+  function selectTrack(idx) {
+    currentTrackIdx = idx;
+    document.querySelectorAll('#am-tracks .am-track').forEach((el, i) => el.classList.toggle('active', i === idx));
+    if (musicEnabled) {
+      stopLoop();
+      currentStep = 0;
+      playNextStep();
+    }
+  }
+
+  // ============ SOUND EFFECTS ============
+  function sfx(notes, type = 'bell', gapBeat = 0.06) {
+    if (!sfxEnabled) return;
+    ensureCtx();
+    if (!ctx) return;
+    if (ctx.state === 'suspended') ctx.resume();
+    let delay = 0;
+    for (const [n, d, v=1] of notes) {
+      const f = noteToFreq(n);
+      setTimeout(() => playNote(f, d, sfxGain, v, type), delay * 1000);
+      delay += gapBeat;
+    }
+  }
+
+  const SFX = {
+    pickTile:    () => sfx([['E6', 0.08, 0.7]], 'bell'),
+    placeTile:   () => sfx([['C5', 0.12, 0.6]], 'piano'),
+    placeFloor:  () => sfx([['A3', 0.25, 0.55]], 'piano'),
+    scorePoint:  () => sfx([['G5', 0.08, 0.7], ['C6', 0.12, 0.7]], 'bell', 0.05),
+    scoreBig:    () => sfx([['C5', 0.08, 0.7], ['E5', 0.08, 0.7], ['G5', 0.08, 0.7], ['C6', 0.2, 0.8]], 'bell', 0.07),
+    penalty:     () => sfx([['E4', 0.1, 0.6], ['C4', 0.2, 0.5]], 'piano', 0.06),
+    rowComplete: () => sfx([['C5', 0.1, 0.7], ['E5', 0.1, 0.7], ['G5', 0.1, 0.7], ['C6', 0.15, 0.8], ['E6', 0.3, 0.8]], 'bell', 0.08),
+    roundEnd:    () => sfx([['G4', 0.15, 0.7], ['B4', 0.15, 0.7], ['D5', 0.15, 0.7], ['G5', 0.35, 0.8]], 'piano', 0.12),
+    victory:     () => sfx([
+      ['C5', 0.2, 0.7], ['E5', 0.2, 0.7], ['G5', 0.2, 0.7], ['C6', 0.2, 0.8],
+      ['E6', 0.15, 0.8], ['G6', 0.15, 0.8], ['C7', 0.5, 0.9]
+    ], 'bell', 0.15),
+    undo:        () => sfx([['A5', 0.08, 0.5], ['E5', 0.1, 0.45]], 'piano', 0.05),
+  };
+
+  function toggleMusic() {
+    if (musicEnabled) stopMusic(); else startMusic();
+  }
+  function toggleSfx() {
+    sfxEnabled = !sfxEnabled;
+    document.getElementById('am-sfx-switch').classList.toggle('on', sfxEnabled);
+    if (sfxEnabled || musicEnabled) document.getElementById('audio-btn').classList.add('on');
+    else document.getElementById('audio-btn').classList.remove('on');
+  }
+  function setVolume(v) {
+    volume = v / 100;
+    if (masterGain) masterGain.gain.value = volume;
+  }
+  function init() {
+    // Render tracks
+    const cont = document.getElementById('am-tracks');
+    cont.innerHTML = TRACKS.map((t, i) => `
+      <div class="am-track ${i===currentTrackIdx?'active':''}" onclick="Snd.selectTrack(${i})">
+        <span>${t.name}</span>
+        <span class="am-composer">${t.composer}</span>
+      </div>`).join('');
+    document.getElementById('am-sfx-switch').classList.toggle('on', sfxEnabled);
+  }
+
+  return { init, toggleMusic, toggleSfx, setVolume, selectTrack, SFX, isMusicOn: () => musicEnabled };
+})();
+
+function toggleMusic() { Snd.toggleMusic(); }
+function toggleSfx() { Snd.toggleSfx(); }
+function setVolume(v) { Snd.setVolume(v); }
+function toggleAudioMenu(e) {
+  if (e) e.stopPropagation();
+  const m = document.getElementById('audio-menu');
+  m.classList.toggle('show');
+}
+document.addEventListener('click', e => {
+  const m = document.getElementById('audio-menu');
+  if (!m.classList.contains('show')) return;
+  if (m.contains(e.target) || e.target.id === 'audio-btn' || e.target.closest('#audio-btn')) return;
+  m.classList.remove('show');
+});
+window.Snd = Snd; // expose for inline onclick handlers
+
 // ============ CONSTANTS ============
 const COLORS = ['blue','yellow','red','black','cyan'];
 const COLOR_ICONS = { blue:'\u25C6', yellow:'\u2605', red:'\u2764', black:'\u2736', cyan:'\u2022' };
@@ -704,10 +1345,11 @@ const WALL = [
 
 // ============ STATE ============
 let S = {}, CFG = {}, sel = null, undoState = null;
+let gameGen = 0; // increments on each new game; in-flight async ops abort if mismatched
 
-function initState(np, ai) {
+function initState(np, ai, difficulty = 'medium') {
   const nf = np * 2 + 1;
-  CFG = { np, ai, nf };
+  CFG = { np, ai, nf, difficulty };
   S = { fac:[], ctr:[], ctrFirst:true, players:[], cur:0, round:1, phase:'pick', over:false };
   for (let i = 0; i < np; i++) {
     S.players.push({
@@ -765,18 +1407,22 @@ function pickTiles(src, fi, color) {
   } else {
     count = S.ctr.filter(t => t === color).length;
     S.ctr = S.ctr.filter(t => t !== color);
-    if (S.ctrFirst) { p.first = true; p.floor.push('first'); S.ctrFirst = false; }
+    var tookFirst = false;
+    if (S.ctrFirst) { p.first = true; p.floor.push('first'); S.ctrFirst = false; tookFirst = true; }
   }
 
+  Snd.SFX.pickTile();
   sel = { color, count };
   S.phase = 'place';
-  setStatus(`<span class="step-num">2</span> Place ${count} <b style="color:var(--${color})">${color}</b> tile${count>1?'s':''} on a pattern row`);
+  const firstMsg = (typeof tookFirst !== 'undefined' && tookFirst) ? ' <span style="color:var(--accent);font-style:italic;">(you took the 1st-player token: \u2212 1 pt next scoring)</span>' : '';
+  setStatus(`<span class="step-num">2</span> Place ${count} <b style="color:var(--${color})">${color}</b> tile${count>1?'s':''} on a pattern row${firstMsg}`);
   document.getElementById('undo-btn').style.display = 'inline-block';
   render();
 }
 
 function undoPick() {
   if (!undoState || S.phase !== 'place') return;
+  Snd.SFX.undo();
   S = undoState;
   sel = null; undoState = null;
   S.phase = 'pick';
@@ -793,6 +1439,7 @@ function placeTiles(row) {
 
   if (row === -1) {
     for (let i = 0; i < count; i++) if (p.floor.length < 7) p.floor.push(color);
+    Snd.SFX.placeFloor();
   } else {
     const line = p.pat[row], max = row + 1;
     const wc = WALL[row].indexOf(color);
@@ -802,6 +1449,7 @@ function placeTiles(row) {
     const toPlace = Math.min(count, space);
     for (let i = 0; i < toPlace; i++) line.push(color);
     for (let i = 0; i < count - toPlace; i++) if (p.floor.length < 7) p.floor.push(color);
+    Snd.SFX.placeTile();
   }
 
   sel = null; undoState = null;
@@ -816,49 +1464,370 @@ function endTurn() {
   S.cur = (S.cur + 1) % CFG.np;
   setStatus(`<span class="step-num">1</span> ${S.players[S.cur].name}, pick tiles from a factory or center`);
   render();
-  if (S.players[S.cur].isAI && !S.over) setTimeout(doAI, 500);
+  if (S.players[S.cur].isAI && !S.over) scheduleAI(500);
 }
 
-function endRound() {
-  // Save pre-scores for summary
-  const pre = S.players.map(p => p.score);
-  const details = S.players.map(p => ({ wallPts: 0, floorPts: 0 }));
+const wait = ms => new Promise(r => setTimeout(r, ms));
 
-  for (let pi = 0; pi < S.players.length; pi++) {
-    const p = S.players[pi];
-    for (let r = 0; r < 5; r++) {
-      if (p.pat[r].length === r + 1) {
-        const c = p.pat[r][0], col = WALL[r].indexOf(c);
-        p.wall[r][col] = true;
-        p.pat[r] = [];
-        let h=0, v=0;
-        for (let x=col-1; x>=0 && p.wall[r][x]; x--) h++;
-        for (let x=col+1; x<5 && p.wall[r][x]; x++) h++;
-        for (let x=r-1; x>=0 && p.wall[x][col]; x--) v++;
-        for (let x=r+1; x<5 && p.wall[x][col]; x++) v++;
-        let pts = (h>0&&v>0) ? h+v+2-1 : (h>0) ? h+1 : (v>0) ? v+1 : 1;
-        p.score += pts;
-        details[pi].wallPts += pts;
-      }
-    }
-    for (let i = 0; i < p.floor.length && i < FLOOR_PEN.length; i++) {
-      details[pi].floorPts += FLOOR_PEN[i];
-    }
-    p.score = Math.max(0, p.score + details[pi].floorPts);
-    p.floor = [];
+async function showBanner(text, sub, duration = 1400) {
+  const banner = document.getElementById('scoring-banner');
+  banner.innerHTML = text + (sub ? `<span class="banner-sub">${sub}</span>` : '');
+  banner.className = '';
+  void banner.offsetWidth;
+  banner.classList.add('show');
+  await wait(duration);
+  banner.classList.remove('show');
+}
+
+function getBoard(pi) { return document.querySelectorAll('.player-board')[pi]; }
+function getPatternSlot(pi, row, idx) {
+  const rowEl = getBoard(pi).querySelectorAll('.p-row')[row];
+  // pattern slots are rendered right-to-left, so idx 0 = rightmost
+  return rowEl.children[idx];
+}
+function getWallSlot(pi, row, col) {
+  return getBoard(pi).querySelectorAll('.wall-row')[row].children[col];
+}
+
+function focusPlayer(pi) {
+  document.querySelectorAll('.player-board').forEach((b, i) => {
+    b.classList.remove('scoring-focus', 'scoring-dim');
+    b.classList.add(i === pi ? 'scoring-focus' : 'scoring-dim');
+  });
+}
+function clearFocus() {
+  document.querySelectorAll('.player-board').forEach(b => b.classList.remove('scoring-focus', 'scoring-dim'));
+}
+
+// Clear scoring-highlight classes from all wall slots of a player so animations can retrigger
+function clearWallHighlights(pi) {
+  const board = getBoard(pi);
+  if (!board) return;
+  board.querySelectorAll('.w-slot').forEach(s => {
+    s.classList.remove('adj-chain', 'scoring');
+  });
+  // Force reflow so re-adding the class restarts the CSS animation
+  void board.offsetWidth;
+}
+
+async function flyTile(fromEl, toEl, color) {
+  const fr = fromEl.getBoundingClientRect();
+  const tr = toEl.getBoundingClientRect();
+  const fly = document.createElement('div');
+  fly.className = `t t-${color} fly-tile`;
+  fly.style.left = fr.left + 'px';
+  fly.style.top = fr.top + 'px';
+  fly.style.width = fr.width + 'px';
+  fly.style.height = fr.height + 'px';
+  document.body.appendChild(fly);
+  void fly.offsetWidth;
+  const dx = tr.left - fr.left;
+  const dy = tr.top - fr.top;
+  fly.style.transform = `translate(${dx}px, ${dy}px) scale(1.15) rotate(8deg)`;
+  fly.style.filter = 'brightness(1.2) drop-shadow(0 6px 12px rgba(0,0,0,.5))';
+  await wait(500);
+  fly.style.transform = `translate(${dx}px, ${dy}px) scale(1) rotate(0deg)`;
+  fly.style.filter = 'none';
+  await wait(100);
+  fly.remove();
+}
+
+function drawChainLines(pi, row, col, adj) {
+  const svgNs = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNs, 'svg');
+  svg.setAttribute('class', 'chain-overlay');
+  svg.style.left = '0';
+  svg.style.top = '0';
+  svg.style.width = '100vw';
+  svg.style.height = '100vh';
+  document.body.appendChild(svg);
+  const centerOf = el => {
+    const r = el.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  };
+  const center = centerOf(getWallSlot(pi, row, col));
+  for (const [ar, ac] of adj) {
+    const p = centerOf(getWallSlot(pi, ar, ac));
+    const line = document.createElementNS(svgNs, 'line');
+    line.setAttribute('x1', center.x);
+    line.setAttribute('y1', center.y);
+    line.setAttribute('x2', p.x);
+    line.setAttribute('y2', p.y);
+    svg.appendChild(line);
   }
+  setTimeout(() => svg.remove(), 1100);
+}
+
+function showTally(anchor, text) {
+  const r = anchor.getBoundingClientRect();
+  const el = document.createElement('div');
+  el.className = 'tally-ticker';
+  el.textContent = text;
+  el.style.left = (r.left + r.width / 2) + 'px';
+  el.style.top = r.top + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1700);
+}
+
+function floatPoints(anchorEl, text, cls = 'pos') {
+  const rect = anchorEl.getBoundingClientRect();
+  const el = document.createElement('div');
+  el.className = `points-pop ${cls}`;
+  el.textContent = text;
+  el.style.left = (rect.left + rect.width / 2) + 'px';
+  el.style.top = (rect.top + rect.height / 2) + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1500);
+}
+
+function popScore(pi) {
+  const board = getBoard(pi);
+  if (!board) return;
+  const scoreEl = board.querySelector('.player-score');
+  if (!scoreEl) return;
+  scoreEl.textContent = S.players[pi].score;
+  scoreEl.classList.remove('pop');
+  void scoreEl.offsetWidth;
+  scoreEl.classList.add('pop');
+}
+
+function showCompleteBadge(anchor, text) {
+  const r = anchor.getBoundingClientRect();
+  const el = document.createElement('div');
+  el.className = 'line-complete';
+  el.textContent = text;
+  el.style.left = (r.left + r.width / 2) + 'px';
+  el.style.top = (r.top + r.height / 2) + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2000);
+}
+
+async function endRound() {
+  const myGen = gameGen;
+  const stale = () => gameGen !== myGen;
+  S.phase = 'scoring';
+  const pre = S.players.map(p => p.score);
+  const details = S.players.map(p => ({
+    wallPts: 0,
+    floorPts: 0,
+    floorCount: p.floor.length,
+    hadFirst: p.floor.includes('first'),
+  }));
+
+  Snd.SFX.roundEnd();
+  await showBanner(`Round ${S.round}`, 'Scoring begins', 1300);
+  if (stale()) return;
+
+  // Per-player scoring
+  for (let pi = 0; pi < S.players.length; pi++) {
+    if (stale()) return;
+    const p = S.players[pi];
+    const hasWallScoring = p.pat.some((line, r) => line.length === r + 1);
+    const hasFloor = p.floor.length > 0;
+    if (!hasWallScoring && !hasFloor) continue;
+
+    focusPlayer(pi);
+    await showBanner(p.name, 'Tallying tiles', 900);
+
+    // Wall scoring — one row at a time
+    for (let r = 0; r < 5; r++) {
+      if (p.pat[r].length !== r + 1) continue;
+      const color = p.pat[r][0];
+      const col = WALL[r].indexOf(color);
+
+      // Capture pattern slot BEFORE we mutate
+      const fromSlot = getPatternSlot(pi, r, 0); // rightmost is the active one
+      const toSlot = getWallSlot(pi, r, col);
+      const fromRect = fromSlot.getBoundingClientRect();
+      const toRect = toSlot.getBoundingClientRect();
+
+      // Hide the source tiles visually: mutate pattern line to empty BEFORE flight
+      p.pat[r] = [];
+      render();
+
+      // Fly the tile from old pattern slot position to new wall slot position
+      // We stored rects, so we can animate independently of DOM re-render
+      const fly = document.createElement('div');
+      fly.className = `t t-${color} fly-tile`;
+      fly.style.left = fromRect.left + 'px';
+      fly.style.top = fromRect.top + 'px';
+      fly.style.width = fromRect.width + 'px';
+      fly.style.height = fromRect.height + 'px';
+      document.body.appendChild(fly);
+      void fly.offsetWidth;
+      const dx = toRect.left - fromRect.left;
+      const dy = toRect.top - fromRect.top;
+      fly.style.transform = `translate(${dx}px, ${dy}px) scale(1.2) rotate(8deg)`;
+      fly.style.filter = 'brightness(1.25) drop-shadow(0 8px 14px rgba(0,0,0,.6))';
+      await wait(500);
+      fly.style.transform = `translate(${dx}px, ${dy}px) scale(1) rotate(0)`;
+      fly.style.filter = 'none';
+      await wait(80);
+
+      // Commit to wall and render
+      p.wall[r][col] = true;
+      render();
+      fly.remove();
+
+      // Pulse the landed tile
+      const landed = getWallSlot(pi, r, col);
+      landed.classList.add('scoring');
+
+      // Collect adjacency
+      const adj = [];
+      let h = 0, v = 0;
+      for (let x = col-1; x >= 0 && p.wall[r][x]; x--) { h++; adj.push([r,x]); }
+      for (let x = col+1; x < 5 && p.wall[r][x]; x++) { h++; adj.push([r,x]); }
+      for (let x = r-1; x >= 0 && p.wall[x][col]; x--) { v++; adj.push([x,col]); }
+      for (let x = r+1; x < 5 && p.wall[x][col]; x++) { v++; adj.push([x,col]); }
+      const pts = (h>0&&v>0) ? h+v+2-1 : (h>0) ? h+1 : (v>0) ? v+1 : 1;
+
+      if (adj.length > 0) {
+        // Draw chain lines and flash adjacent tiles
+        drawChainLines(pi, r, col, adj);
+        for (const [ar, ac] of adj) getWallSlot(pi, ar, ac).classList.add('adj-chain');
+        // Running breakdown
+        const breakdown = (h>0&&v>0) ? `${h+1} \u2194  \u00D7  ${v+1} \u2195` : (h>0) ? `${h+1} in a row` : `${v+1} in a column`;
+        showTally(landed, breakdown);
+        await wait(700);
+      } else {
+        await wait(300);
+      }
+
+      // Points float + score pop
+      floatPoints(landed, `+${pts}`, 'pos');
+      if (pts >= 4) Snd.SFX.scoreBig(); else Snd.SFX.scorePoint();
+      p.score += pts;
+      details[pi].wallPts += pts;
+      popScore(pi);
+
+      // Check for row/column completion mid-round (visual celebration only)
+      const rowDone = p.wall[r].every(c => c);
+      let colFull = true;
+      for (let rr = 0; rr < 5; rr++) if (!p.wall[rr][col]) { colFull = false; break; }
+      if (rowDone || colFull) Snd.SFX.rowComplete();
+      if (rowDone && colFull) {
+        showCompleteBadge(landed, 'Row + Column!');
+      } else if (rowDone) {
+        showCompleteBadge(landed, 'Row Complete!');
+      } else if (colFull) {
+        showCompleteBadge(landed, 'Column!');
+      }
+
+      await wait(800);
+    }
+
+    // Floor penalties — flick tiles off one at a time
+    if (hasFloor) {
+      const board = getBoard(pi);
+      const floorEl = board.querySelector('.floor-line');
+      const floorLen = Math.min(p.floor.length, FLOOR_PEN.length);
+      let totalPen = 0;
+      for (let i = 0; i < floorLen; i++) {
+        const pen = FLOOR_PEN[i];
+        totalPen += pen;
+        const slot = floorEl.children[i];
+        if (slot) {
+          slot.classList.add('flicking');
+          const tileEl = slot.querySelector('.t');
+          if (tileEl) floatPoints(tileEl, `${pen}`, 'neg small');
+        }
+        Snd.SFX.penalty();
+        await wait(260);
+      }
+
+      details[pi].floorPts = totalPen;
+      p.score = Math.max(0, p.score + totalPen);
+      // Show cumulative penalty
+      floatPoints(floorEl, `${totalPen}`, 'neg');
+      popScore(pi);
+      await wait(700);
+
+      // Actually clear floor
+      p.floor = [];
+      render();
+      await wait(250);
+    }
+
+    await wait(300);
+  }
+  if (stale()) return;
+  clearFocus();
 
   const isEnd = S.players.some(p => p.wall.some(r => r.every(c => c)));
   if (isEnd) {
-    finalScore();
+    await showBanner('Final Scoring', 'Awarding bonuses', 1200);
+    if (stale()) return;
+    await animateFinalBonuses(details);
+    if (stale()) return;
     S.over = true;
     render();
     showGameOver();
     return;
   }
 
-  // Show round summary
   showRoundSummary(pre, details);
+}
+
+async function animateFinalBonuses(details) {
+  for (let pi = 0; pi < S.players.length; pi++) {
+    const p = S.players[pi];
+    focusPlayer(pi);
+    await wait(250);
+
+    // Rows: +2 each
+    for (let r = 0; r < 5; r++) {
+      if (p.wall[r].every(c => c)) {
+        clearWallHighlights(pi);
+        p.score += 2;
+        const anchor = getWallSlot(pi, r, 2);
+        for (let c = 0; c < 5; c++) getWallSlot(pi, r, c).classList.add('adj-chain');
+        floatPoints(anchor, '+2', 'pos');
+        showCompleteBadge(anchor, 'Row +2');
+        Snd.SFX.scoreBig();
+        popScore(pi);
+        await wait(750);
+      }
+    }
+    // Columns: +7 each
+    for (let c = 0; c < 5; c++) {
+      if (p.wall.every(r => r[c])) {
+        clearWallHighlights(pi);
+        p.score += 7;
+        const anchor = getWallSlot(pi, 2, c);
+        for (let r = 0; r < 5; r++) getWallSlot(pi, r, c).classList.add('adj-chain');
+        floatPoints(anchor, '+7', 'pos');
+        showCompleteBadge(anchor, 'Column +7');
+        Snd.SFX.rowComplete();
+        popScore(pi);
+        await wait(850);
+      }
+    }
+    // Colors: +10 each
+    for (const col of COLORS) {
+      let n = 0, lastR = 0, lastC = 0;
+      for (let r = 0; r < 5; r++) {
+        const c = WALL[r].indexOf(col);
+        if (p.wall[r][c]) { n++; lastR = r; lastC = c; }
+      }
+      if (n === 5) {
+        clearWallHighlights(pi);
+        p.score += 10;
+        for (let r = 0; r < 5; r++) {
+          const c = WALL[r].indexOf(col);
+          getWallSlot(pi, r, c).classList.add('adj-chain');
+        }
+        const anchor = getWallSlot(pi, lastR, lastC);
+        floatPoints(anchor, '+10', 'pos');
+        showCompleteBadge(anchor, `All ${col}! +10`);
+        Snd.SFX.victory();
+        popScore(pi);
+        await wait(950);
+      }
+    }
+    await wait(400);
+  }
+  clearFocus();
 }
 
 function showRoundSummary(pre, details) {
@@ -871,9 +1840,13 @@ function showRoundSummary(pre, details) {
     const change = p.score - pre[i];
     const d = document.createElement('div');
     d.className = 'summary-p';
+    const dt = details[i];
+    const floorNote = dt.floorPts < 0
+      ? ` <span style="opacity:.8">(floor ${dt.floorPts}${dt.hadFirst ? ', includes 1st token \u22121' : ''})</span>`
+      : '';
     d.innerHTML = `
       <span class="sp-name">${p.name}</span>
-      <span class="sp-change ${change>=0?'pos':'neg'}">${change>=0?'+':''}${change} (wall +${details[i].wallPts}, floor ${details[i].floorPts})</span>
+      <span class="sp-change ${change>=0?'pos':'neg'}">${change>=0?'+':''}${change} <span style="opacity:.7;font-size:12px;">wall +${dt.wallPts}${floorNote}</span></span>
       <span class="sp-score">${p.score}</span>
     `;
     cont.appendChild(d);
@@ -883,6 +1856,8 @@ function showRoundSummary(pre, details) {
 }
 
 function closeSummaryAndContinue() {
+  // Guard: if user started a new game, do nothing
+  if (!S.players || !S.players.length) return;
   document.getElementById('round-summary').classList.remove('show');
   S.round++;
   const fi = S.players.findIndex(p => p.first);
@@ -891,7 +1866,7 @@ function closeSummaryAndContinue() {
   S.phase = 'pick';
   setStatus(`<span class="step-num">1</span> Round ${S.round} &mdash; ${S.players[S.cur].name}, pick tiles`);
   render();
-  if (S.players[S.cur].isAI) setTimeout(doAI, 500);
+  if (S.players[S.cur].isAI) scheduleAI(500);
 }
 
 function finalScore() {
@@ -906,65 +1881,56 @@ function finalScore() {
   }
 }
 
-// ============ AI ============
+// ============ AI ENGINE ============
+function scheduleAI(ms) {
+  const myGen = gameGen;
+  setTimeout(() => { if (gameGen === myGen) doAI(); }, ms);
+}
+
 function doAI() {
-  if (S.over) return;
+  if (S.over || S.phase !== 'pick') return;
   const p = S.players[S.cur];
-  const moves = aiMoves(p);
+  if (!p || !p.isAI) return;
+  const moves = enumerateMoves(S, S.cur);
   if (!moves.length) { endTurn(); return; }
-  let best=moves[0], bs=-Infinity;
-  for (const m of moves) { const s=aiEval(p,m); if(s>bs){bs=s;best=m;} }
-  aiExec(p, best);
+  const diff = CFG.difficulty || 'medium';
+  const best = diff === 'hard' ? pickHard(moves) : diff === 'medium' ? pickMedium(moves) : pickEasy(moves);
+  execMove(S, S.cur, best);
   S.phase = 'pick';
   endTurn();
 }
 
-function aiMoves(p) {
-  const srcs = [], moves = [];
-  S.fac.forEach((f,fi) => {
+// ---------- Move enumeration (shared by all levels) ----------
+function enumerateMoves(state, pi) {
+  const p = state.players[pi], srcs = [], moves = [];
+  state.fac.forEach((f,fi) => {
     if(!f.length) return;
     for (const c of [...new Set(f)]) srcs.push({src:'f',fi,color:c,count:f.filter(t=>t===c).length});
   });
-  if (S.ctr.length) for (const c of [...new Set(S.ctr)]) srcs.push({src:'c',fi:-1,color:c,count:S.ctr.filter(t=>t===c).length});
+  if (state.ctr.length) {
+    for (const c of [...new Set(state.ctr)]) srcs.push({src:'c',fi:-1,color:c,count:state.ctr.filter(t=>t===c).length});
+  }
   for (const s of srcs) {
     for (let r=0;r<5;r++) {
       const line=p.pat[r], max=r+1, wc=WALL[r].indexOf(s.color);
       if(p.wall[r][wc]||line.length>=max||(line.length&&line[0]!==s.color)) continue;
       moves.push({...s,row:r});
     }
-    moves.push({...s,row:-1});
+    moves.push({...s,row:-1}); // floor
   }
   return moves;
 }
 
-function aiEval(p, m) {
-  if(m.row===-1) return -m.count*2 - (m.src==='c'&&S.ctrFirst?1:0);
-  const line=p.pat[m.row], max=m.row+1, space=max-line.length;
-  const placed=Math.min(m.count,space), overflow=m.count-placed;
-  let sc=0;
-  if(line.length+placed===max) {
-    const col=WALL[m.row].indexOf(m.color);
-    let h=0,v=0;
-    for(let x=col-1;x>=0&&p.wall[m.row][x];x--)h++;
-    for(let x=col+1;x<5&&p.wall[m.row][x];x++)h++;
-    for(let x=m.row-1;x>=0&&p.wall[x][col];x--)v++;
-    for(let x=m.row+1;x<5&&p.wall[x][col];x++)v++;
-    sc += ((h>0&&v>0)?h+v+2-1:(h>0)?h+1:(v>0)?v+1:1)*3;
-    if(p.wall[m.row].filter(c=>c).length===4) sc+=5;
-  } else sc += placed;
-  sc -= overflow*2;
-  if(m.src==='c'&&S.ctrFirst) sc-=1;
-  return sc;
-}
-
-function aiExec(p, m) {
+// ---------- Move execution (mutates state) ----------
+function execMove(state, pi, m) {
+  const p = state.players[pi];
   if(m.src==='f') {
-    const rest=S.fac[m.fi].filter(t=>t!==m.color);
-    S.fac[m.fi]=[];
-    S.ctr.push(...rest);
+    const rest=state.fac[m.fi].filter(t=>t!==m.color);
+    state.fac[m.fi]=[];
+    state.ctr.push(...rest);
   } else {
-    S.ctr=S.ctr.filter(t=>t!==m.color);
-    if(S.ctrFirst){p.first=true;p.floor.push('first');S.ctrFirst=false;}
+    state.ctr=state.ctr.filter(t=>t!==m.color);
+    if(state.ctrFirst){p.first=true;p.floor.push('first');state.ctrFirst=false;}
   }
   if(m.row===-1) { for(let i=0;i<m.count;i++) if(p.floor.length<7) p.floor.push(m.color); }
   else {
@@ -972,6 +1938,192 @@ function aiExec(p, m) {
     for(let i=0;i<tp;i++) line.push(m.color);
     for(let i=0;i<m.count-tp;i++) if(p.floor.length<7) p.floor.push(m.color);
   }
+}
+
+// ---------- State cloning for simulation ----------
+function cloneState(state) {
+  return {
+    fac: state.fac.map(f=>[...f]),
+    ctr: [...state.ctr],
+    ctrFirst: state.ctrFirst,
+    players: state.players.map(p=>({
+      name: p.name, isAI: p.isAI, first: p.first,
+      score: p.score,
+      pat: p.pat.map(r=>[...r]),
+      wall: p.wall.map(r=>[...r]),
+      floor: [...p.floor],
+    })),
+    cur: state.cur, round: state.round, phase: state.phase, over: state.over,
+  };
+}
+
+// ---------- Adjacency scorer (used by all levels) ----------
+function wallPtsFor(wall, r, col) {
+  let h=0,v=0;
+  for(let x=col-1;x>=0&&wall[r][x];x--)h++;
+  for(let x=col+1;x<5&&wall[r][x];x++)h++;
+  for(let x=r-1;x>=0&&wall[x][col];x--)v++;
+  for(let x=r+1;x<5&&wall[x][col];x++)v++;
+  return (h>0&&v>0)?h+v+1:(h>0)?h+1:(v>0)?v+1:1;
+}
+
+// ---------- Full position evaluator (medium + hard) ----------
+function evalPosition(state, pi) {
+  const p = state.players[pi];
+  let sc = p.score;
+
+  // 1. Immediate end-of-round wall scoring (simulate completing pattern lines)
+  const simWall = p.wall.map(r=>[...r]);
+  for (let r=0;r<5;r++) {
+    if (p.pat[r].length === r+1) {
+      const c = p.pat[r][0], col = WALL[r].indexOf(c);
+      simWall[r][col] = true;
+      sc += wallPtsFor(simWall, r, col);
+    }
+  }
+
+  // 2. Floor penalty (exact, based on current floor contents)
+  for (let i=0; i<Math.min(p.floor.length, FLOOR_PEN.length); i++) sc += FLOOR_PEN[i];
+  sc = Math.max(0, sc);
+
+  // 3. Partial pattern line credit (closer to completion = more valuable)
+  for (let r=0;r<5;r++) {
+    const len = p.pat[r].length, max = r+1;
+    if (len > 0 && len < max) {
+      // Value: how close are we? weighted by expected points from that wall position
+      const color = p.pat[r][0], col = WALL[r].indexOf(color);
+      const expectedPts = wallPtsFor(simWall, r, col);
+      const progress = len / max;
+      sc += progress * progress * expectedPts * 0.8; // diminishing returns
+    }
+  }
+
+  // 4. Wall bonus potential (end-game bonuses)
+  // Rows: +2 each
+  for (let r=0;r<5;r++) {
+    const filled = simWall[r].filter(c=>c).length;
+    if (filled === 5) sc += 2; // already complete
+    else if (filled >= 3) sc += (filled / 5) * (filled / 5) * 2;
+  }
+  // Columns: +7 each (much more valuable)
+  for (let c=0;c<5;c++) {
+    let filled=0;
+    for (let r=0;r<5;r++) if(simWall[r][c]) filled++;
+    if (filled === 5) sc += 7;
+    else if (filled >= 3) sc += (filled / 5) * (filled / 5) * 7;
+  }
+  // Colors: +10 each
+  for (const col of COLORS) {
+    let n=0;
+    for (let r=0;r<5;r++) { const c=WALL[r].indexOf(col); if(simWall[r][c]) n++; }
+    if (n === 5) sc += 10;
+    else if (n >= 3) sc += (n / 5) * (n / 5) * 10;
+  }
+
+  // 5. Adjacency cluster value: tiles next to many neighbors are more valuable for future
+  for (let r=0;r<5;r++) for (let c=0;c<5;c++) {
+    if (!simWall[r][c]) continue;
+    let adj=0;
+    if(r>0&&simWall[r-1][c]) adj++;
+    if(r<4&&simWall[r+1][c]) adj++;
+    if(c>0&&simWall[r][c-1]) adj++;
+    if(c<4&&simWall[r][c+1]) adj++;
+    sc += adj * 0.3; // small bonus per adjacency (future tiles placed here score more)
+  }
+
+  return sc;
+}
+
+// ========== EASY: Original greedy (with slight randomization) ==========
+function pickEasy(moves) {
+  // Score each move with the simple heuristic + small random jitter for variety
+  let best=moves[0], bs=-Infinity;
+  for (const m of moves) {
+    let sc;
+    if(m.row===-1) { sc = -m.count*2 - (m.src==='c'&&S.ctrFirst?1:0); }
+    else {
+      const p=S.players[S.cur], line=p.pat[m.row], max=m.row+1;
+      const space=max-line.length, placed=Math.min(m.count,space), overflow=m.count-placed;
+      if(line.length+placed===max) {
+        const col=WALL[m.row].indexOf(m.color);
+        sc = wallPtsFor(p.wall, m.row, col) * 3;
+        if(p.wall[m.row].filter(c=>c).length===4) sc+=5;
+      } else sc = placed;
+      sc -= overflow*2;
+      if(m.src==='c'&&S.ctrFirst) sc-=1;
+    }
+    sc += (Math.random() - 0.5) * 1.5; // jitter so it doesn't play identically each game
+    if(sc>bs){bs=sc;best=m;}
+  }
+  return best;
+}
+
+// ========== MEDIUM: Enhanced heuristic evaluation ==========
+function pickMedium(moves) {
+  let best=moves[0], bs=-Infinity;
+  for (const m of moves) {
+    const sim = cloneState(S);
+    execMove(sim, S.cur, m);
+    const myVal = evalPosition(sim, S.cur);
+    // Factor in what we're giving opponents via center dump
+    let oppAvg = 0;
+    for (let i=0;i<sim.players.length;i++) { if (i!==S.cur) oppAvg += evalPosition(sim, i); }
+    oppAvg /= Math.max(1, sim.players.length - 1);
+    const sc = myVal - oppAvg * 0.3; // weight opponents lightly
+    if(sc>bs){bs=sc;best=m;}
+  }
+  return best;
+}
+
+// ========== HARD: 1-ply minimax (consider opponent's best response) ==========
+function pickHard(moves) {
+  let best=moves[0], bs=-Infinity;
+  const nextPi = (S.cur + 1) % CFG.np;
+  for (const m of moves) {
+    const sim = cloneState(S);
+    execMove(sim, S.cur, m);
+
+    // Check if round would end after this move
+    const roundOver = sim.fac.every(f=>!f.length) && !sim.ctr.length;
+    let sc;
+    if (roundOver) {
+      // Evaluate end-of-round position directly
+      sc = evalPosition(sim, S.cur);
+      for (let i=0;i<sim.players.length;i++) { if(i!==S.cur) sc -= evalPosition(sim,i)*0.35; }
+    } else {
+      // Simulate opponent's best response
+      const oppMoves = enumerateMoves(sim, nextPi);
+      let worstCase = Infinity;
+      if (!oppMoves.length) {
+        worstCase = evalPosition(sim, S.cur);
+      } else {
+        // Sample top moves if too many (cap at 15 for speed)
+        const candidates = oppMoves.length > 15 ? prefilterMoves(sim, nextPi, oppMoves, 15) : oppMoves;
+        for (const om of candidates) {
+          const sim2 = cloneState(sim);
+          execMove(sim2, nextPi, om);
+          const myVal = evalPosition(sim2, S.cur);
+          const oppVal = evalPosition(sim2, nextPi);
+          const val = myVal - oppVal * 0.5;
+          if (val < worstCase) worstCase = val;
+        }
+      }
+      sc = worstCase;
+    }
+    if(sc>bs){bs=sc;best=m;}
+  }
+  return best;
+}
+
+// Quick prefilter: score all opponent moves with medium eval, keep top N
+function prefilterMoves(state, pi, moves, n) {
+  const scored = moves.map(m => {
+    const sim = cloneState(state);
+    execMove(sim, pi, m);
+    return { m, sc: evalPosition(sim, pi) };
+  });
+  scored.sort((a,b) => b.sc - a.sc);
+  return scored.slice(0, n).map(s => s.m);
 }
 
 // ============ RENDER ============
@@ -1169,6 +2321,7 @@ function renderBoards() {
 function setStatus(html) { document.getElementById('status').innerHTML = html; }
 
 function showGameOver() {
+  Snd.SFX.victory();
   document.getElementById('overlay').classList.add('show');
   const sorted = [...S.players].sort((a,b) => b.score - a.score);
   document.getElementById('winner-text').textContent = `${sorted[0].name} Wins!`;
@@ -1189,26 +2342,38 @@ function showGameOver() {
 function selectCard(el, groupId) {
   document.querySelectorAll(`#${groupId} .setup-card`).forEach(c => c.classList.remove('sel'));
   el.classList.add('sel');
+  // Show/hide difficulty row based on mode
+  if (groupId === 'mode-cards') {
+    const isAI = el.dataset.val === 'ai';
+    document.getElementById('difficulty-row').style.display = isAI ? 'flex' : 'none';
+  }
 }
 
 function startGame() {
+  gameGen++;
   const np = parseInt(document.querySelector('#player-cards .sel').dataset.val);
   const ai = document.querySelector('#mode-cards .sel').dataset.val === 'ai';
+  const difficulty = document.querySelector('#diff-cards .sel').dataset.val;
   document.getElementById('setup').style.display = 'none';
   const ga = document.getElementById('game-area');
   ga.style.display = 'flex'; ga.style.flexDirection = 'column'; ga.style.alignItems = 'center'; ga.style.gap = '14px';
 
-  initState(np, ai);
+  initState(np, ai, difficulty);
   setStatus(`<span class="step-num">1</span> ${S.players[0].name}, pick tiles from a factory or center`);
   render();
 }
 
 function restartGame() {
+  // Invalidate any in-flight scoring/AI loops
+  gameGen++;
   document.getElementById('overlay').classList.remove('show');
   document.getElementById('round-summary').classList.remove('show');
+  document.getElementById('scoring-banner').classList.remove('show');
   document.getElementById('setup').style.display = 'flex';
   document.getElementById('game-area').style.display = 'none';
   document.getElementById('undo-btn').style.display = 'none';
+  // Clear any lingering floating overlays
+  document.querySelectorAll('.points-pop, .tally-ticker, .line-complete, .chain-overlay, .fly-tile').forEach(el => el.remove());
   sel = null; undoState = null;
 }
 
@@ -1241,7 +2406,8 @@ const TUT = [
       <div style="font-size:24px;color:#666">\u2192</div>
       <div style="text-align:center;font-size:12px;color:#aaa;">Take 2 blue<br>Red + Yellow go to center</div>
     </div>
-    <p><b>The Center</b> &mdash; take all tiles of one color from the shared center pool. The <b>first</b> player to take from the center also gets the 1st player token (which costs a penalty point).</p>`
+    <p><b>The Center</b> &mdash; take all tiles of one color from the shared center pool.</p>
+    <p style="background:rgba(192,57,43,.12); border-left:3px solid var(--accent); padding:8px 12px; border-radius:6px;">\u26A0 The <b>first</b> player to take from the center each round also takes the <b>"1st" token</b> &mdash; it lands on your floor line and costs <b>\u22121 point</b> at round end. In exchange, you go first next round.</p>`
   },
   {
     title: 'Step 2: Place Tiles',
@@ -1359,6 +2525,9 @@ document.addEventListener('keydown', e => {
   }
   if (e.key === 'z' && (e.ctrlKey || e.metaKey)) undoPick();
 });
+
+// Initialize audio UI on load
+Snd.init();
 </script>
 </body>
 </html>

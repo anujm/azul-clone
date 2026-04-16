@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
   :root {
     /* Authentic Azul tile colors — inspired by Portuguese azulejos */
@@ -807,6 +808,109 @@
   .setup-row { display: flex; flex-direction: column; align-items: center; gap: 10px; }
   .setup-row label { font-family: 'Cinzel', serif; font-size: 11px; text-transform: uppercase; letter-spacing: 4px; color: var(--gold); opacity: .8; }
 
+  /* ===== ONLINE UI ===== */
+  .online-input {
+    background: rgba(0,0,0,.3);
+    border: 2px solid var(--gold-d);
+    border-radius: 8px;
+    padding: 10px 16px;
+    color: var(--gold);
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    letter-spacing: 1px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .online-input:focus { border-color: var(--gold); box-shadow: 0 0 12px rgba(201,169,97,.3); }
+  .online-input::placeholder { color: rgba(201,169,97,.5); font-style: italic; }
+
+  .or-divider {
+    width: 240px;
+    text-align: center;
+    border-bottom: 1px solid var(--gold-d);
+    line-height: 0.1em;
+    margin: 14px 0 4px;
+    opacity: .6;
+  }
+  .or-divider span {
+    background: var(--bg);
+    padding: 0 10px;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--gold);
+  }
+
+  /* Lobby */
+  #lobby { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 75vh; gap: 18px; padding: 20px; animation: fadeIn .4s ease; }
+  #lobby h2 { font-family: 'Cinzel', serif; font-size: 32px; color: var(--gold); letter-spacing: 8px; text-transform: uppercase; }
+
+  .lobby-card {
+    background: radial-gradient(ellipse at 30% 20%, #f5ebcf 0%, var(--parchment) 50%, var(--parchment-d) 100%);
+    color: var(--ink);
+    border-radius: 10px;
+    padding: 24px 32px;
+    min-width: 360px;
+    max-width: 460px;
+    box-shadow: 0 0 0 4px var(--wood), 0 0 0 6px var(--wood-d), 0 0 0 7px var(--gold), 0 12px 30px rgba(0,0,0,.5);
+  }
+  .lobby-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .lobby-label { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 3px; color: var(--wood-d); text-transform: uppercase; opacity: .8; }
+  .lobby-code {
+    font-family: 'Cinzel', serif;
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: 6px;
+    color: var(--wood-d);
+    background: rgba(201,169,97,.2);
+    padding: 4px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--gold-d);
+  }
+  .lobby-divider { height: 1px; background: linear-gradient(90deg, transparent, var(--parchment-sh), transparent); margin: 12px 0; }
+  .lobby-player {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    background: rgba(255,255,255,.4);
+    border: 1px solid var(--parchment-sh);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+  }
+  .lobby-player.you { background: linear-gradient(180deg, rgba(255,233,168,.5), rgba(201,169,97,.3)); border-color: var(--gold-d); font-weight: 700; }
+  .lobby-player .lp-badge { font-size: 10px; padding: 2px 8px; background: var(--gold); color: var(--ink); border-radius: 10px; font-weight: 700; letter-spacing: 1px; margin-left: auto; }
+
+  /* Online status pill in header */
+  #online-pill {
+    display: none;
+    background: rgba(0,0,0,.3);
+    border: 1px solid var(--gold-d);
+    border-radius: 12px;
+    padding: 2px 10px;
+    font-size: 11px;
+    color: var(--gold);
+    font-family: 'Cinzel', serif;
+    letter-spacing: 2px;
+    margin-left: 10px;
+    animation: pulse 2s infinite;
+  }
+
+  /* Waiting overlay during opponent's turn */
+  .waiting-banner {
+    display: inline-block;
+    background: rgba(201,169,97,.2);
+    border: 1px solid var(--gold-d);
+    border-radius: 14px;
+    padding: 4px 14px;
+    font-size: 12px;
+    color: var(--gold);
+    font-style: italic;
+    margin-left: 8px;
+  }
+
   /* ===== TUTORIAL OVERLAY ===== */
   #tutorial-overlay { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,.82); backdrop-filter: blur(5px); }
   #tutorial-overlay.show { display: flex; align-items: center; justify-content: center; }
@@ -935,6 +1039,14 @@
     <p class="subtitle">The beautiful tile-laying game</p>
 
     <div class="setup-row">
+      <label>Game Type</label>
+      <div class="setup-cards" id="gametype-cards">
+        <div class="setup-card sel" data-val="local" onclick="selectCard(this,'gametype-cards')"><div class="num">Local</div><div class="desc">Same device</div></div>
+        <div class="setup-card" data-val="online" onclick="selectCard(this,'gametype-cards')"><div class="num">Online</div><div class="desc">Play with friends</div></div>
+      </div>
+    </div>
+
+    <div class="setup-row" id="player-row">
       <label>Players</label>
       <div class="setup-cards" id="player-cards">
         <div class="setup-card sel" data-val="2" onclick="selectCard(this,'player-cards')"><div class="num">2</div><div class="desc">5 factories</div></div>
@@ -943,7 +1055,7 @@
       </div>
     </div>
 
-    <div class="setup-row">
+    <div class="setup-row" id="mode-row">
       <label>Mode</label>
       <div class="setup-cards" id="mode-cards">
         <div class="setup-card sel" data-val="ai" onclick="selectCard(this,'mode-cards')"><div class="num">vs AI</div><div class="desc">Play solo</div></div>
@@ -960,10 +1072,51 @@
       </div>
     </div>
 
-    <div style="display:flex; gap:12px; margin-top:8px;">
+    <div id="local-actions" style="display:flex; gap:12px; margin-top:8px;">
       <button class="btn btn-primary" onclick="startGame()">Start Game</button>
       <button class="btn btn-ghost" onclick="showTutorial()">How to Play</button>
     </div>
+
+    <!-- Online setup -->
+    <div id="online-setup" style="display:none; flex-direction:column; align-items:center; gap:14px; margin-top:10px;">
+      <input id="player-name" class="online-input" maxlength="14" placeholder="Your name">
+      <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+        <button class="btn btn-primary" onclick="hostNewGame()">Host New Game</button>
+        <button class="btn btn-ghost" onclick="showTutorial()">How to Play</button>
+      </div>
+      <div class="or-divider"><span>OR JOIN EXISTING</span></div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input id="join-code" class="online-input" maxlength="6" placeholder="ROOM CODE" style="text-transform:uppercase; letter-spacing:3px; text-align:center; width:140px;">
+        <button class="btn btn-primary" onclick="joinExistingGame()">Join</button>
+      </div>
+      <div id="online-status" style="font-size:12px; color:#b0a07a; min-height:18px; font-style:italic;"></div>
+    </div>
+  </div>
+
+  <!-- Lobby (for online) -->
+  <div id="lobby" style="display:none;">
+    <h2>Waiting Room</h2>
+    <div class="lobby-card">
+      <div class="lobby-row">
+        <span class="lobby-label">Room Code</span>
+        <span id="lobby-code" class="lobby-code"></span>
+      </div>
+      <div class="lobby-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+        <span class="lobby-label">Share Link</span>
+        <div style="display:flex; gap:6px;">
+          <input id="lobby-share-url" readonly class="online-input" style="flex:1; font-size:11px;">
+          <button class="btn btn-ghost btn-sm" onclick="copyShareUrl()">Copy</button>
+        </div>
+      </div>
+      <div class="lobby-divider"></div>
+      <div class="lobby-label" style="margin-bottom:6px;">Players</div>
+      <div id="lobby-players"></div>
+      <div id="lobby-host-controls" style="margin-top:14px; display:none;">
+        <button id="lobby-start-btn" class="btn btn-primary" onclick="startOnlineGame()" disabled>Start Game</button>
+      </div>
+      <div id="lobby-client-msg" style="margin-top:14px; font-style:italic; color:var(--wood); display:none;">Waiting for host to start the game…</div>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="leaveLobby()">Leave Room</button>
   </div>
 
   <!-- ===== GAME AREA ===== -->
@@ -1361,6 +1514,421 @@ document.addEventListener('click', e => {
 });
 window.Snd = Snd; // expose for inline onclick handlers
 
+// ============ NETWORKING (PeerJS) ============
+const Net = (() => {
+  let mode = 'local';     // 'local' | 'host' | 'client'
+  let peer = null;
+  let conns = [];         // host: many; client: one
+  let myIdx = 0;
+  let players = [];       // [{name, idx, conn?}]
+  let roomCode = null;
+  let isStarted = false;
+
+  function shortCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let s = '';
+    for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
+    return s;
+  }
+  const ROOM_PREFIX = 'azul-clone-' + (location.hostname || 'local') + '-';
+
+  function setStatus(msg, isError) {
+    const el = document.getElementById('online-status');
+    if (el) {
+      el.textContent = msg;
+      el.style.color = isError ? '#e94560' : '#b0a07a';
+    }
+  }
+
+  function host(name) {
+    return new Promise((resolve, reject) => {
+      if (typeof Peer === 'undefined') return reject(new Error('PeerJS not loaded — check your internet connection.'));
+      mode = 'host';
+      myIdx = 0;
+      players = [{ name: name || 'Host', idx: 0 }];
+      roomCode = shortCode();
+      const peerId = ROOM_PREFIX + roomCode;
+      try { peer = new Peer(peerId, { debug: 0 }); }
+      catch (e) { return reject(e); }
+
+      const timeout = setTimeout(() => reject(new Error('Connection timed out. Retry?')), 12000);
+
+      peer.on('open', id => {
+        clearTimeout(timeout);
+        resolve(roomCode);
+      });
+      peer.on('connection', conn => {
+        conn.on('open', () => {
+          conns.push(conn);
+          conn.on('data', data => handleHostMsg(conn, data));
+          conn.on('close', () => onPeerDisconnect(conn));
+          conn.on('error', () => onPeerDisconnect(conn));
+        });
+      });
+      peer.on('error', err => {
+        clearTimeout(timeout);
+        if (err.type === 'unavailable-id') {
+          // Room ID conflict — retry with new code
+          peer.destroy();
+          host(name).then(resolve).catch(reject);
+        } else {
+          reject(err);
+        }
+      });
+    });
+  }
+
+  function join(code, name) {
+    return new Promise((resolve, reject) => {
+      if (typeof Peer === 'undefined') return reject(new Error('PeerJS not loaded.'));
+      mode = 'client';
+      const peerId = ROOM_PREFIX + code.toUpperCase();
+      try { peer = new Peer({ debug: 0 }); }
+      catch (e) { return reject(e); }
+
+      const timeout = setTimeout(() => reject(new Error('Could not connect. Check the code and try again.')), 12000);
+
+      peer.on('open', () => {
+        const conn = peer.connect(peerId, { reliable: true });
+        conn.on('open', () => {
+          clearTimeout(timeout);
+          conns = [conn];
+          conn.send({ t: 'join', name: name || 'Guest' });
+          conn.on('data', data => handleClientMsg(data));
+          conn.on('close', () => onHostDisconnect());
+          conn.on('error', () => onHostDisconnect());
+          resolve();
+        });
+        conn.on('error', err => {
+          clearTimeout(timeout);
+          reject(new Error('Room not found.'));
+        });
+      });
+      peer.on('error', err => {
+        clearTimeout(timeout);
+        const msg = err.type === 'peer-unavailable' ? 'Room not found.' : (err.message || 'Connection failed.');
+        reject(new Error(msg));
+      });
+    });
+  }
+
+  function onPeerDisconnect(conn) {
+    conns = conns.filter(c => c !== conn);
+    if (conn.playerIdx != null) {
+      const removed = players[conn.playerIdx];
+      if (removed) removed.disconnected = true;
+      broadcastLobby();
+      if (isStarted) {
+        // Show notice in-game
+        setOnlineNotice((removed?.name || 'A player') + ' disconnected');
+      }
+    }
+  }
+
+  function onHostDisconnect() {
+    if (mode !== 'client') return;
+    alert('Disconnected from host.');
+    leave();
+    restartGame();
+  }
+
+  function handleHostMsg(conn, data) {
+    if (data.t === 'join') {
+      const name = (data.name || 'Guest').slice(0, 14);
+      const idx = players.length;
+      if (idx >= 4) { conn.send({ t: 'reject', reason: 'Room full' }); conn.close(); return; }
+      conn.playerIdx = idx;
+      players.push({ name, idx, conn });
+      conn.send({ t: 'welcome', idx, players: players.map(p => ({ name: p.name, idx: p.idx })) });
+      broadcastLobby();
+    } else if (data.t === 'action' && isStarted) {
+      // Validate it's their turn
+      if (S.cur !== conn.playerIdx) return;
+      // Apply locally + rebroadcast to all (including original sender, who didn't apply yet)
+      applyAndRebroadcast(data.action, data.args);
+    } else if (data.t === 'continue' && isStarted) {
+      // Only host advances rounds, but accept "continue" as ack from client (no-op for now)
+    }
+  }
+
+  function handleClientMsg(data) {
+    if (data.t === 'welcome') {
+      myIdx = data.idx;
+      players = data.players;
+      renderLobby();
+    } else if (data.t === 'lobby') {
+      players = data.players;
+      renderLobby();
+    } else if (data.t === 'reject') {
+      alert('Could not join: ' + data.reason);
+      leave();
+      restartGame();
+    } else if (data.t === 'start') {
+      // Initialize game from host's seed/state
+      isStarted = true;
+      startOnlineGameFromHost(data);
+    } else if (data.t === 'action') {
+      executeAction(data.action, data.args);
+    } else if (data.t === 'newRound') {
+      // Host has generated new factories — apply
+      applyNewRound(data.fac, data.cur, data.round);
+    } else if (data.t === 'state') {
+      // Full state sync
+      applyFullState(data.state);
+    }
+  }
+
+  function broadcast(msg) { for (const c of conns) try { c.send(msg); } catch(e){} }
+  function broadcastLobby() {
+    const list = players.map(p => ({ name: p.name, idx: p.idx, disconnected: !!p.disconnected }));
+    broadcast({ t: 'lobby', players: list });
+    renderLobby();
+  }
+
+  // Called by host when starting the game
+  function hostStart(np) {
+    isStarted = true;
+    // Build initial state on host
+    initState(np, false, 'medium');
+    // Use real player names
+    for (let i = 0; i < np && i < players.length; i++) S.players[i].name = players[i].name;
+    // Broadcast a full state snapshot
+    broadcast({ t: 'start', state: cloneStatePlain(S), cfg: { ...CFG } });
+  }
+
+  function startOnlineGameFromHost(msg) {
+    // Replicate state on client
+    S = msg.state;
+    CFG = msg.cfg;
+    sel = null; undoState = null;
+    document.getElementById('lobby').style.display = 'none';
+    showGameArea();
+    setStatusBar(`<span class="step-num">1</span> ${S.players[S.cur].name} is choosing tiles…`);
+    render();
+  }
+
+  function applyNewRound(fac, cur, round) {
+    document.getElementById('round-summary').classList.remove('show');
+    S.fac = fac;
+    S.ctr = [];
+    S.ctrFirst = true;
+    S.cur = cur;
+    S.round = round;
+    S.phase = 'pick';
+    for (const p of S.players) p.first = false;
+    sel = null; undoState = null;
+    setStatusBar(`<span class="step-num">1</span> Round ${S.round} &mdash; ${S.players[S.cur].name}, pick tiles`);
+    render();
+  }
+
+  function applyFullState(state) {
+    S = state;
+    sel = null; undoState = null;
+    render();
+  }
+
+  // ----- Action routing -----
+  // Called by UI handlers when user performs an action
+  function sendAction(action, args) {
+    if (mode === 'local') return false;
+    if (mode === 'client') {
+      if (S.cur !== myIdx) return true; // not your turn — silently ignore
+      conns[0].send({ t: 'action', action, args });
+      return true;
+    }
+    if (mode === 'host') {
+      // Host applies + broadcasts (but not to self)
+      applyAndRebroadcast(action, args);
+      return true;
+    }
+    return false;
+  }
+
+  function applyAndRebroadcast(action, args) {
+    executeAction(action, args);
+    broadcast({ t: 'action', action, args });
+  }
+
+  // Execute action locally (skipping the network re-routing)
+  function executeAction(action, args) {
+    if (action === 'pick') _pickTilesLocal(...args);
+    else if (action === 'place') _placeTilesLocal(...args);
+    else if (action === 'undo') _undoPickLocal();
+  }
+
+  function isOnline() { return mode !== 'local'; }
+  function isHost() { return mode === 'host'; }
+  function isMyTurn() { return mode === 'local' || S.cur === myIdx; }
+  function getMyIdx() { return myIdx; }
+  function getPlayers() { return players; }
+
+  function broadcastNewRound(fac, cur, round) {
+    broadcast({ t: 'newRound', fac, cur, round });
+  }
+
+  function setOnlineNotice(msg) {
+    const el = document.getElementById('status');
+    if (el && isOnline()) el.innerHTML = msg;
+  }
+
+  function leave() {
+    isStarted = false;
+    if (peer) try { peer.destroy(); } catch(e){}
+    peer = null;
+    conns = [];
+    players = [];
+    mode = 'local';
+    myIdx = 0;
+    roomCode = null;
+  }
+
+  function getMode() { return mode; }
+  function getRoomCode() { return roomCode; }
+
+  // Plain clone (handles JSON-able state)
+  function cloneStatePlain(s) {
+    return JSON.parse(JSON.stringify(s));
+  }
+
+  return {
+    host, join, leave, sendAction, isOnline, isHost, isMyTurn, getMyIdx, getPlayers,
+    hostStart, broadcastNewRound, setOnlineNotice, getMode, getRoomCode, broadcast,
+  };
+})();
+
+window.Net = Net;
+
+// Lobby/online UI helpers
+function setStatusBar(html) {
+  const el = document.getElementById('status');
+  if (el) el.innerHTML = html;
+}
+
+function showGameArea() {
+  document.getElementById('setup').style.display = 'none';
+  document.getElementById('lobby').style.display = 'none';
+  const ga = document.getElementById('game-area');
+  ga.style.display = 'flex';
+  ga.style.flexDirection = 'column';
+  ga.style.alignItems = 'center';
+  ga.style.gap = '14px';
+}
+
+async function hostNewGame() {
+  const name = (document.getElementById('player-name').value || 'Host').slice(0, 14);
+  const status = document.getElementById('online-status');
+  status.style.color = '#b0a07a';
+  status.textContent = 'Connecting to broker…';
+  try {
+    const code = await Net.host(name);
+    document.getElementById('setup').style.display = 'none';
+    document.getElementById('lobby').style.display = 'flex';
+    const url = location.origin + location.pathname + '#' + code;
+    document.getElementById('lobby-code').textContent = code;
+    document.getElementById('lobby-share-url').value = url;
+    document.getElementById('lobby-host-controls').style.display = 'block';
+    document.getElementById('lobby-client-msg').style.display = 'none';
+    renderLobby();
+  } catch (e) {
+    status.style.color = '#e94560';
+    status.textContent = e.message || 'Failed to host';
+  }
+}
+
+async function joinExistingGame(prefilledCode) {
+  const code = (prefilledCode || document.getElementById('join-code').value || '').toUpperCase().trim();
+  const name = (document.getElementById('player-name').value || 'Guest').slice(0, 14);
+  if (!code) { document.getElementById('online-status').textContent = 'Enter a room code.'; return; }
+  const status = document.getElementById('online-status');
+  status.style.color = '#b0a07a';
+  status.textContent = 'Connecting…';
+  try {
+    await Net.join(code, name);
+    document.getElementById('setup').style.display = 'none';
+    document.getElementById('lobby').style.display = 'flex';
+    document.getElementById('lobby-code').textContent = code;
+    document.getElementById('lobby-share-url').value = location.origin + location.pathname + '#' + code;
+    document.getElementById('lobby-host-controls').style.display = 'none';
+    document.getElementById('lobby-client-msg').style.display = 'block';
+    renderLobby();
+  } catch (e) {
+    status.style.color = '#e94560';
+    status.textContent = e.message || 'Failed to join';
+  }
+}
+
+function renderLobby() {
+  const cont = document.getElementById('lobby-players');
+  if (!cont) return;
+  const players = Net.getPlayers();
+  const myIdx = Net.getMyIdx();
+  cont.innerHTML = '';
+  players.forEach((p, i) => {
+    const d = document.createElement('div');
+    d.className = 'lobby-player' + (i === myIdx ? ' you' : '');
+    let badge = '';
+    if (i === 0) badge = 'HOST';
+    else badge = '';
+    if (p.disconnected) badge = 'OFFLINE';
+    d.innerHTML = `<span>${i+1}.</span> <span>${p.name}</span>` +
+      (badge ? `<span class="lp-badge">${badge}</span>` : '');
+    cont.appendChild(d);
+  });
+  // Empty slots
+  for (let i = players.length; i < 4; i++) {
+    const d = document.createElement('div');
+    d.className = 'lobby-player';
+    d.style.opacity = '.4';
+    d.innerHTML = `<span>${i+1}.</span> <span style="font-style:italic;">— waiting —</span>`;
+    cont.appendChild(d);
+  }
+  // Enable/disable Start button (host only, needs >=2 players)
+  const btn = document.getElementById('lobby-start-btn');
+  if (btn) btn.disabled = players.length < 2;
+}
+
+function copyShareUrl() {
+  const inp = document.getElementById('lobby-share-url');
+  inp.select();
+  try { document.execCommand('copy'); } catch(e){}
+  navigator.clipboard?.writeText(inp.value).catch(()=>{});
+  const status = document.getElementById('online-status');
+  // Quick toast on the Copy button
+  const btn = event && event.target;
+  if (btn) {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = orig; }, 1200);
+  }
+}
+
+function startOnlineGame() {
+  const np = Net.getPlayers().length;
+  if (np < 2) return;
+  Net.hostStart(np);
+  showGameArea();
+  setStatusBar(`<span class="step-num">1</span> ${S.players[S.cur].name}, pick tiles from a factory or center`);
+  render();
+}
+
+function leaveLobby() {
+  Net.leave();
+  document.getElementById('lobby').style.display = 'none';
+  document.getElementById('setup').style.display = 'flex';
+}
+
+// Auto-fill join code from URL hash and switch to online tab
+function checkUrlForRoomCode() {
+  const hash = location.hash.replace(/^#/, '').trim();
+  if (hash && /^[A-Z0-9]{6}$/i.test(hash)) {
+    // Switch to Online tab
+    const onlineCard = document.querySelector('#gametype-cards [data-val="online"]');
+    if (onlineCard) selectCard(onlineCard, 'gametype-cards');
+    const codeInp = document.getElementById('join-code');
+    if (codeInp) codeInp.value = hash.toUpperCase();
+  }
+}
+
 // ============ CONSTANTS ============
 const COLORS = ['blue','yellow','red','black','cyan'];
 const COLOR_ICONS = { blue:'\u25C6', yellow:'\u2605', red:'\u2764', black:'\u2736', cyan:'\u2022' };
@@ -1420,14 +1988,47 @@ function makeBag() {
 function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
 
 // ============ GAME LOGIC ============
+// Public wrappers: route through Net in online mode, otherwise execute locally
 function pickTiles(src, fi, color) {
-  const p = S.players[S.cur];
-  if (p.isAI || S.phase !== 'pick' || S.over) return;
+  if (S.phase !== 'pick' || S.over) return;
+  if (Net.isOnline()) {
+    if (!Net.isMyTurn()) return; // not your turn
+    Net.sendAction('pick', [src, fi, color]);
+    return;
+  }
+  _pickTilesLocal(src, fi, color);
+}
 
-  // Save undo state
-  undoState = deepClone(S);
+function undoPick() {
+  if (!undoState || S.phase !== 'place') return;
+  if (Net.isOnline()) {
+    if (!Net.isMyTurn()) return;
+    Net.sendAction('undo', []);
+    return;
+  }
+  _undoPickLocal();
+}
+
+function placeTiles(row) {
+  if (!sel || S.phase !== 'place' || S.over) return;
+  if (Net.isOnline()) {
+    if (!Net.isMyTurn()) return;
+    Net.sendAction('place', [row]);
+    return;
+  }
+  _placeTilesLocal(row);
+}
+
+// ----- Local execution (called by both local play and network handler) -----
+function _pickTilesLocal(src, fi, color) {
+  const p = S.players[S.cur];
+  if ((!Net.isOnline() && p.isAI) || S.phase !== 'pick' || S.over) return;
+
+  // Save undo state (only meaningful when it's your turn)
+  if (!Net.isOnline() || S.cur === Net.getMyIdx()) undoState = deepClone(S);
 
   let count = 0;
+  let tookFirst = false;
   if (src === 'factory') {
     const fac = S.fac[fi];
     const rest = [];
@@ -1437,20 +2038,25 @@ function pickTiles(src, fi, color) {
   } else {
     count = S.ctr.filter(t => t === color).length;
     S.ctr = S.ctr.filter(t => t !== color);
-    var tookFirst = false;
     if (S.ctrFirst) { p.first = true; p.floor.push('first'); S.ctrFirst = false; tookFirst = true; }
   }
 
   Snd.SFX.pickTile();
   sel = { color, count };
   S.phase = 'place';
-  const firstMsg = (typeof tookFirst !== 'undefined' && tookFirst) ? ' <span style="color:var(--accent);font-style:italic;">(you took the 1st-player token: \u2212 1 pt next scoring)</span>' : '';
-  setStatus(`<span class="step-num">2</span> Place ${count} <b style="color:var(--${color})">${color}</b> tile${count>1?'s':''} on a pattern row${firstMsg}`);
-  document.getElementById('undo-btn').style.display = 'inline-block';
+  const youAreCurrent = !Net.isOnline() || S.cur === Net.getMyIdx();
+  if (youAreCurrent) {
+    const firstMsg = tookFirst ? ' <span style="color:var(--accent);font-style:italic;">(you took the 1st-player token: \u2212 1 pt next scoring)</span>' : '';
+    setStatus(`<span class="step-num">2</span> Place ${count} <b style="color:var(--${color})">${color}</b> tile${count>1?'s':''} on a pattern row${firstMsg}`);
+    document.getElementById('undo-btn').style.display = 'inline-block';
+  } else {
+    setStatus(`<span class="step-num">2</span> ${p.name} is choosing where to place ${count} <b style="color:var(--${color})">${color}</b> tile${count>1?'s':''}…`);
+    document.getElementById('undo-btn').style.display = 'none';
+  }
   render();
 }
 
-function undoPick() {
+function _undoPickLocal() {
   if (!undoState || S.phase !== 'place') return;
   Snd.SFX.undo();
   S = undoState;
@@ -1461,10 +2067,10 @@ function undoPick() {
   render();
 }
 
-function placeTiles(row) {
+function _placeTilesLocal(row) {
   if (!sel || S.phase !== 'place' || S.over) return;
   const p = S.players[S.cur];
-  if (p.isAI) return;
+  if (!Net.isOnline() && p.isAI) return;
   const { color, count } = sel;
 
   if (row === -1) {
@@ -1492,9 +2098,19 @@ function endTurn() {
   const allEmpty = S.fac.every(f => !f.length) && !S.ctr.length;
   if (allEmpty) { endRound(); return; }
   S.cur = (S.cur + 1) % CFG.np;
-  setStatus(`<span class="step-num">1</span> ${S.players[S.cur].name}, pick tiles from a factory or center`);
+
+  // Status differs in online mode based on whose turn it is
+  if (Net.isOnline()) {
+    if (S.cur === Net.getMyIdx()) {
+      setStatus(`<span class="step-num">1</span> Your turn &mdash; pick tiles from a factory or center`);
+    } else {
+      setStatus(`<span class="step-num">1</span> Waiting for ${S.players[S.cur].name}…`);
+    }
+  } else {
+    setStatus(`<span class="step-num">1</span> ${S.players[S.cur].name}, pick tiles from a factory or center`);
+  }
   render();
-  if (S.players[S.cur].isAI && !S.over) scheduleAI(500);
+  if (!Net.isOnline() && S.players[S.cur].isAI && !S.over) scheduleAI(500);
 }
 
 // Scoring animation speed: 'normal' | 'fast' | 'instant'
@@ -1903,21 +2519,44 @@ function showRoundSummary(pre, details) {
     cont.appendChild(d);
   }
   el.classList.add('show');
+  // Update the Continue button for online mode
+  const btn = document.getElementById('summary-btn');
+  if (btn) {
+    if (Net.isOnline() && !Net.isHost()) {
+      btn.textContent = 'Waiting for host…';
+      btn.disabled = true;
+      btn.style.opacity = '.6';
+    } else {
+      btn.textContent = 'Continue';
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    }
+  }
   render();
 }
 
 function closeSummaryAndContinue() {
   // Guard: if user started a new game, do nothing
   if (!S.players || !S.players.length) return;
+
+  // In online mode, only the host advances rounds
+  if (Net.isOnline() && !Net.isHost()) return;
+
   document.getElementById('round-summary').classList.remove('show');
   S.round++;
   const fi = S.players.findIndex(p => p.first);
   if (fi >= 0) { S.cur = fi; S.players[fi].first = false; }
   fillFactories();
   S.phase = 'pick';
+
+  // Sync new factories to clients
+  if (Net.isOnline() && Net.isHost()) {
+    Net.broadcastNewRound(S.fac.map(f => [...f]), S.cur, S.round);
+  }
+
   setStatus(`<span class="step-num">1</span> Round ${S.round} &mdash; ${S.players[S.cur].name}, pick tiles`);
   render();
-  if (S.players[S.cur].isAI) scheduleAI(500);
+  if (!Net.isOnline() && S.players[S.cur].isAI) scheduleAI(500);
 }
 
 function finalScore() {
@@ -2186,7 +2825,8 @@ function render() {
 function renderFactories() {
   const area = document.getElementById('factories-area');
   area.innerHTML = '';
-  const canP = S.phase==='pick' && !S.players[S.cur].isAI && !S.over;
+  const isMyTurn = Net.isOnline() ? S.cur === Net.getMyIdx() : !S.players[S.cur].isAI;
+  const canP = S.phase==='pick' && isMyTurn && !S.over;
 
   for (let i = 0; i < S.fac.length; i++) {
     const d = document.createElement('div');
@@ -2228,6 +2868,7 @@ function renderBoards() {
   for (let pi = 0; pi < S.players.length; pi++) {
     const p = S.players[pi];
     const isCur = pi === S.cur;
+    const isMine = Net.isOnline() && pi === Net.getMyIdx();
     const board = document.createElement('div');
     board.className = 'player-board' + (isCur ? ' active' : ' inactive');
 
@@ -2236,7 +2877,11 @@ function renderBoards() {
     hdr.className = 'player-header';
     const nm = document.createElement('span');
     nm.className = 'player-name';
-    nm.innerHTML = (isCur && !S.over ? '<span class="turn-dot"></span>' : '') + p.name + (p.isAI?' <span style="font-size:11px;color:#888">(AI)</span>':'');
+    let nameLabel = p.name;
+    if (p.isAI) nameLabel += ' <span style="font-size:11px;color:#888">(AI)</span>';
+    if (isMine) nameLabel += ' <span style="font-size:10px;background:var(--gold);color:var(--ink);padding:1px 6px;border-radius:6px;letter-spacing:1px;margin-left:4px;">YOU</span>';
+    if (Net.isOnline() && p.disconnected) nameLabel += ' <span style="font-size:10px;color:#e94560;">(offline)</span>';
+    nm.innerHTML = (isCur && !S.over ? '<span class="turn-dot"></span>' : '') + nameLabel;
     const sc = document.createElement('span');
     sc.className = 'player-score';
     sc.textContent = p.score;
@@ -2257,7 +2902,9 @@ function renderBoards() {
       const max = r + 1, line = p.pat[r];
 
       let canPlace = false;
-      if (placing && isCur) {
+      // In online mode, only allow placing on YOUR own board AND it must be your turn
+      const canInteract = isCur && (!Net.isOnline() || isMine);
+      if (placing && canInteract) {
         const wc = WALL[r].indexOf(sel.color);
         canPlace = !p.wall[r][wc] && (line.length === 0 || line[0] === sel.color) && line.length < max;
         rowDiv.classList.add(canPlace ? 'can-place' : 'cant-place');
@@ -2334,7 +2981,8 @@ function renderBoards() {
     floorHdr.appendChild(floorLbl);
     const floorClick = document.createElement('span');
     floorClick.className = 'floor-click';
-    if (placing && isCur) {
+    const floorCanInteract = isCur && (!Net.isOnline() || isMine);
+    if (placing && floorCanInteract) {
       floorClick.textContent = 'Click to discard tiles here';
       floorClick.style.display = 'inline';
       floorClick.onclick = () => placeTiles(-1);
@@ -2348,8 +2996,8 @@ function renderBoards() {
     floorArea.appendChild(penRow);
 
     const floorLine = document.createElement('div');
-    floorLine.className = 'floor-line' + (placing && isCur ? ' can-drop' : '');
-    if (placing && isCur) floorLine.onclick = () => placeTiles(-1);
+    floorLine.className = 'floor-line' + (placing && floorCanInteract ? ' can-drop' : '');
+    if (placing && floorCanInteract) floorLine.onclick = () => placeTiles(-1);
     for (let i=0;i<7;i++) {
       const slot = document.createElement('div');
       slot.className = 'floor-slot';
@@ -2398,6 +3046,16 @@ function selectCard(el, groupId) {
     const isAI = el.dataset.val === 'ai';
     document.getElementById('difficulty-row').style.display = isAI ? 'flex' : 'none';
   }
+  if (groupId === 'gametype-cards') {
+    const isOnline = el.dataset.val === 'online';
+    // Hide local-only sections
+    document.getElementById('player-row').style.display = isOnline ? 'none' : 'flex';
+    document.getElementById('mode-row').style.display = isOnline ? 'none' : 'flex';
+    document.getElementById('difficulty-row').style.display = isOnline ? 'none' :
+      (document.querySelector('#mode-cards .sel')?.dataset.val === 'ai' ? 'flex' : 'none');
+    document.getElementById('local-actions').style.display = isOnline ? 'none' : 'flex';
+    document.getElementById('online-setup').style.display = isOnline ? 'flex' : 'none';
+  }
 }
 
 function startGame() {
@@ -2417,9 +3075,12 @@ function startGame() {
 function restartGame() {
   // Invalidate any in-flight scoring/AI loops
   gameGen++;
+  // Clean up online state too
+  if (Net && Net.isOnline()) Net.leave();
   document.getElementById('overlay').classList.remove('show');
   document.getElementById('round-summary').classList.remove('show');
   document.getElementById('scoring-banner').classList.remove('show');
+  document.getElementById('lobby').style.display = 'none';
   document.getElementById('setup').style.display = 'flex';
   document.getElementById('game-area').style.display = 'none';
   document.getElementById('undo-btn').style.display = 'none';
@@ -2579,6 +3240,8 @@ document.addEventListener('keydown', e => {
 
 // Initialize audio UI on load
 Snd.init();
+// Auto-detect room code from URL hash
+checkUrlForRoomCode();
 </script>
 </body>
 </html>

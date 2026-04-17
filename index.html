@@ -1340,7 +1340,7 @@
       </div>
       <div class="or-divider"><span>OR JOIN EXISTING</span></div>
       <div style="display:flex; gap:8px; align-items:center;">
-        <input id="join-code" class="online-input" maxlength="6" placeholder="ROOM CODE" style="text-transform:uppercase; letter-spacing:3px; text-align:center; width:140px;">
+        <input id="join-code" class="online-input" maxlength="6" placeholder="ROOM CODE" style="text-transform:uppercase; letter-spacing:3px; text-align:center; width:170px;">
         <button class="btn btn-primary" onclick="joinExistingGame()">Join</button>
       </div>
       <div id="online-status" style="font-size:12px; color:#b0a07a; min-height:18px; font-style:italic;"></div>
@@ -1784,7 +1784,9 @@ const Net = (() => {
     for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
     return s;
   }
-  const ROOM_PREFIX = 'azul-clone-' + (location.hostname || 'local') + '-';
+  // PeerJS only allows [A-Za-z0-9 _-] in IDs, so sanitize the hostname (dots and colons are invalid).
+  const hostSlug = (location.hostname || 'local').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'local';
+  const ROOM_PREFIX = 'azul-clone-' + hostSlug + '-';
 
   function setStatus(msg, isError) {
     const el = document.getElementById('online-status');
@@ -1957,7 +1959,11 @@ const Net = (() => {
     sel = null; undoState = null;
     document.getElementById('lobby').style.display = 'none';
     showGameArea();
-    setStatusBar(`<span class="step-num">1</span> ${S.players[S.cur].name} is choosing tiles…`);
+    if (S.cur === myIdx) {
+      setStatusBar(`<span class="step-num">1</span> Your turn. Pick tiles from a factory or center`);
+    } else {
+      setStatusBar(`<span class="step-num">1</span> Waiting for ${S.players[S.cur].name}…`);
+    }
     render();
   }
 
@@ -1971,7 +1977,11 @@ const Net = (() => {
     S.phase = 'pick';
     for (const p of S.players) p.first = false;
     sel = null; undoState = null;
-    setStatusBar(`<span class="step-num">1</span> Round ${S.round}. ${S.players[S.cur].name}, pick tiles`);
+    if (S.cur === myIdx) {
+      setStatusBar(`<span class="step-num">1</span> Round ${S.round}. Your turn, pick tiles`);
+    } else {
+      setStatusBar(`<span class="step-num">1</span> Round ${S.round}. Waiting for ${S.players[S.cur].name}…`);
+    }
     render();
   }
 
@@ -2161,7 +2171,12 @@ function startOnlineGame() {
   if (np < 2) return;
   Net.hostStart(np);
   showGameArea();
-  setStatusBar(`<span class="step-num">1</span> ${S.players[S.cur].name}, pick tiles from a factory or center`);
+  // Host always goes first, so it's their turn
+  if (S.cur === Net.getMyIdx()) {
+    setStatusBar(`<span class="step-num">1</span> Your turn. Pick tiles from a factory or center`);
+  } else {
+    setStatusBar(`<span class="step-num">1</span> Waiting for ${S.players[S.cur].name}…`);
+  }
   render();
 }
 
@@ -2808,7 +2823,15 @@ function closeSummaryAndContinue() {
     Net.broadcastNewRound(S.fac.map(f => [...f]), S.cur, S.round);
   }
 
-  setStatus(`<span class="step-num">1</span> Round ${S.round}. ${S.players[S.cur].name}, pick tiles`);
+  if (Net.isOnline()) {
+    if (S.cur === Net.getMyIdx()) {
+      setStatus(`<span class="step-num">1</span> Round ${S.round}. Your turn, pick tiles`);
+    } else {
+      setStatus(`<span class="step-num">1</span> Round ${S.round}. Waiting for ${S.players[S.cur].name}…`);
+    }
+  } else {
+    setStatus(`<span class="step-num">1</span> Round ${S.round}. ${S.players[S.cur].name}, pick tiles`);
+  }
   render();
   if (!Net.isOnline() && S.players[S.cur].isAI) scheduleAI(500);
 }

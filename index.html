@@ -10,7 +10,7 @@
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
   :root {
-    /* Authentic Azul tile colors — inspired by Portuguese azulejos */
+    /* Authentic Azul tile colors - inspired by Portuguese azulejos */
     --blue: #1b5985;        --blue-d: #0e3a5c;        --blue-hi: #3d87b8;
     --yellow: #d99324;      --yellow-d: #9a6414;      --yellow-hi: #f0b858;
     --red: #962c2c;         --red-d: #621515;         --red-hi: #c44d4d;
@@ -43,7 +43,7 @@
       radial-gradient(ellipse at bottom, rgba(20,40,70,.4), transparent 50%);
   }
 
-  /* ===== TILES — Ceramic Portuguese azulejos ===== */
+  /* ===== TILES - Ceramic Portuguese azulejos ===== */
   .t {
     width: 40px; height: 40px;
     border-radius: 5px;
@@ -73,23 +73,23 @@
   }
   .t:hover { transform: scale(1.1); z-index: 2; box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 4px 10px rgba(0,0,0,.5); }
 
-  /* BLUE — deep cobalt with 8-point star */
+  /* BLUE - deep cobalt with 8-point star */
   .t-blue { background: radial-gradient(ellipse at 30% 20%, var(--blue-hi) 0%, var(--blue) 45%, var(--blue-d) 100%); }
   .t-blue::after { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><g fill='none' stroke='%23ffffff' stroke-width='1.5' opacity='0.85'><path d='M20 4 L24 16 L36 20 L24 24 L20 36 L16 24 L4 20 L16 16 Z'/><circle cx='20' cy='20' r='3' fill='%23ffffff' opacity='0.6'/></g></svg>"); }
 
-  /* YELLOW — ochre with flower medallion */
+  /* YELLOW - ochre with flower medallion */
   .t-yellow { background: radial-gradient(ellipse at 30% 20%, var(--yellow-hi) 0%, var(--yellow) 45%, var(--yellow-d) 100%); }
   .t-yellow::after { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><g fill='%23ffffff' stroke='%23ffffff' stroke-width='1' opacity='0.75'><circle cx='20' cy='20' r='3'/><ellipse cx='20' cy='8' rx='2.5' ry='5'/><ellipse cx='20' cy='32' rx='2.5' ry='5'/><ellipse cx='8' cy='20' rx='5' ry='2.5'/><ellipse cx='32' cy='20' rx='5' ry='2.5'/><circle cx='11' cy='11' r='2'/><circle cx='29' cy='11' r='2'/><circle cx='11' cy='29' r='2'/><circle cx='29' cy='29' r='2'/></g></svg>"); }
 
-  /* RED — crimson with Moorish rosette */
+  /* RED - crimson with Moorish rosette */
   .t-red { background: radial-gradient(ellipse at 30% 20%, var(--red-hi) 0%, var(--red) 45%, var(--red-d) 100%); }
   .t-red::after { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><g fill='none' stroke='%23ffffff' stroke-width='1.3' opacity='0.8'><circle cx='20' cy='20' r='6'/><circle cx='20' cy='20' r='10'/><path d='M20 4 L20 36 M4 20 L36 20 M8 8 L32 32 M32 8 L8 32'/><circle cx='20' cy='20' r='2' fill='%23ffffff'/></g></svg>"); }
 
-  /* BLACK — obsidian with geometric interlace */
+  /* BLACK - obsidian with geometric interlace */
   .t-black { background: radial-gradient(ellipse at 30% 20%, var(--black-hi) 0%, var(--black) 45%, var(--black-d) 100%); }
   .t-black::after { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><g fill='none' stroke='%23d4c296' stroke-width='1.3' opacity='0.85'><path d='M20 4 L32 12 L32 28 L20 36 L8 28 L8 12 Z'/><path d='M20 10 L27 15 L27 25 L20 30 L13 25 L13 15 Z'/><circle cx='20' cy='20' r='2.5' fill='%23d4c296'/></g></svg>"); }
 
-  /* CYAN (ice/white azulejo) — pale blue with delicate swirl */
+  /* CYAN (ice/white azulejo) - pale blue with delicate swirl */
   .t-cyan { background: radial-gradient(ellipse at 30% 20%, var(--cyan-hi) 0%, var(--cyan) 45%, var(--cyan-d) 100%); }
   .t-cyan::after { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><g fill='none' stroke='%231b5985' stroke-width='1.2' opacity='0.7'><path d='M20 6 Q28 12 28 20 Q28 28 20 34 Q12 28 12 20 Q12 12 20 6 Z'/><path d='M20 12 Q24 16 24 20 Q24 24 20 28 Q16 24 16 20 Q16 16 20 12 Z'/><circle cx='20' cy='20' r='1.5' fill='%231b5985'/></g></svg>"); }
 
@@ -124,7 +124,7 @@
 
   .t.highlight { box-shadow: 0 0 0 3px #fff, 0 0 22px rgba(255,230,150,.7); transform: scale(1.15); z-index: 3; }
 
-  /* ===== HEADER — Ornate title card ===== */
+  /* ===== HEADER - Ornate title card ===== */
   #header {
     text-align: center;
     padding: 12px 12px 10px;
@@ -257,7 +257,7 @@
     font-weight: 700;
   }
 
-  /* ===== FACTORIES — Blue & white porcelain plates ===== */
+  /* ===== FACTORIES - Blue & white porcelain plates ===== */
   #factories-section { text-align: center; margin-bottom: 4px; }
   #factories-section .section-label {
     font-family: 'Cinzel', serif;
@@ -352,7 +352,7 @@
   }
   #center-pool .t { width: 34px; height: 34px; }
 
-  /* ===== PLAYER BOARDS — Parchment with wooden frame ===== */
+  /* ===== PLAYER BOARDS - Parchment with wooden frame ===== */
   #boards { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
   .player-board {
     padding: 18px 20px 16px;
@@ -420,7 +420,7 @@
 
   .board-content { display: flex; gap: 8px; align-items: flex-start; position: relative; }
 
-  /* Pattern lines — Etched into parchment */
+  /* Pattern lines - Etched into parchment */
   .pattern-lines { display: flex; flex-direction: column; gap: 4px; padding: 6px; border-radius: 6px; background: rgba(139,90,43,.06); border: 1px solid rgba(139,90,43,.15); }
   .p-row {
     display: flex;
@@ -462,7 +462,7 @@
   .arrow-col span { height: 40px; display: flex; align-items: center; justify-content: center; opacity: .4; }
   .arrow-col span.ready { color: var(--accent); opacity: 1; animation: pulse 1s infinite; text-shadow: 0 0 6px var(--accent); }
 
-  /* Wall — Embossed mosaic grid */
+  /* Wall - Embossed mosaic grid */
   .wall {
     display: flex;
     flex-direction: column;
@@ -515,7 +515,7 @@
   .player-board.scoring-dim { opacity: .45; filter: saturate(.7); transform: scale(.98); }
   .player-board { transition: box-shadow .35s, opacity .35s, transform .35s, filter .35s; }
 
-  /* Scoring tile — glows with a pulsing gold aura */
+  /* Scoring tile - glows with a pulsing gold aura */
   .w-slot.scoring {
     z-index: 5;
     animation: scoringPulse 1.2s ease;
@@ -526,7 +526,7 @@
     100% { box-shadow: inset 0 0 0 1px rgba(0,0,0,.2), 0 2px 4px rgba(0,0,0,.3); }
   }
 
-  /* Adjacency chain — glowing gold connection */
+  /* Adjacency chain - glowing gold connection */
   .w-slot.adj-chain {
     animation: adjChain 1s ease;
     position: relative;
@@ -946,6 +946,260 @@
   .tut-card .tut-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--parchment-sh); transition: .2s; cursor: pointer; }
   .tut-card .tut-dot.active { background: var(--gold-d); transform: scale(1.3); }
   .tut-card .tut-key { display: inline-block; background: rgba(255,255,255,.6); border: 1px solid var(--parchment-sh); border-radius: 4px; padding: 1px 7px; font-size: 11px; color: var(--ink); font-family: 'Cinzel', serif; }
+
+  /* Proper hanging-indent bullet lists */
+  .tut-card ul { margin: 8px 0 14px; padding-left: 22px; }
+  .tut-card ul li { margin-bottom: 6px; line-height: 1.6; color: var(--ink); }
+  .tut-card ul li::marker { color: var(--wood-d); }
+
+  /* Numbered step list with aligned wrap */
+  .tut-steps { list-style: none; margin: 6px 0 14px; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+  .tut-steps li { display: grid; grid-template-columns: 26px 1fr; gap: 12px; align-items: flex-start; line-height: 1.55; }
+  .tut-steps .num-badge {
+    width: 26px; height: 26px;
+    background: linear-gradient(180deg, var(--gold) 0%, #8a6f2f 100%);
+    color: var(--ink);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cinzel', serif; font-size: 12px; font-weight: 900;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 1px 2px rgba(0,0,0,.3);
+    flex-shrink: 0;
+  }
+
+  /* Mini pattern-row visual inside tutorial */
+  .tut-pattern-rows {
+    display: flex; flex-direction: column; gap: 3px;
+    padding: 8px;
+    background: rgba(139,90,43,.1);
+    border: 1px solid rgba(139,90,43,.2);
+    border-radius: 6px;
+  }
+  .tut-pattern-rows .tpr-row { display: flex; justify-content: flex-end; gap: 3px; }
+  .tut-pattern-rows .tpr-slot {
+    width: 28px; height: 28px; border-radius: 4px;
+    background: linear-gradient(135deg, rgba(139,90,43,.15) 0%, rgba(168,143,90,.25) 100%);
+    box-shadow: inset 0 2px 3px rgba(139,90,43,.4), inset 0 -1px 1px rgba(255,255,255,.3);
+  }
+  .tut-pattern-rows .t { width: 28px; height: 28px; cursor: default; }
+
+  /* Scoring bonus list rows in parchment theme */
+  .tut-bonus-list { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+  .tut-bonus-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 14px;
+    background: rgba(255,255,255,.4);
+    border: 1px solid var(--parchment-sh);
+    border-radius: 6px;
+    font-size: 14px;
+    color: var(--ink);
+  }
+  .tut-bonus-row .pts { color: #2d5a2d; font-weight: 800; font-family: 'Cinzel', serif; letter-spacing: 1px; }
+
+  /* Warning callout */
+  .tut-warn {
+    background: rgba(192,57,43,.1);
+    border-left: 3px solid var(--accent);
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin: 10px 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+  .tut-warn::before { content: "\26A0  "; font-weight: 700; color: var(--accent); }
+
+  /* Factory visual specific to tutorial */
+  .tut-factory {
+    width: 100px; height: 100px; border-radius: 50%;
+    display: grid; grid-template-columns: 1fr 1fr; place-items: center;
+    padding: 18px; gap: 4px; flex-shrink: 0;
+    background: radial-gradient(circle at 35% 30%, #fdfcf4 0%, #f0ead3 40%, #c9b079 100%);
+    box-shadow: inset 0 0 0 4px #8a6f2f, 0 3px 8px rgba(0,0,0,.3);
+  }
+  .tut-factory .t { width: 26px; height: 26px; cursor: default; }
+
+  /* Flow arrow for tutorial */
+  .tut-arrow { font-size: 24px; color: var(--wood-d); flex-shrink: 0; }
+
+  /* Adjacency scoring mini-wall */
+  .tut-mini-wall { display: flex; flex-direction: column; gap: 3px; padding: 6px; background: rgba(139,90,43,.1); border-radius: 6px; }
+  .tut-mini-wall .tmw-row { display: flex; gap: 3px; }
+  .tut-mini-wall .tmw-slot { width: 24px; height: 24px; border-radius: 3px; box-shadow: inset 0 2px 3px rgba(139,90,43,.35); }
+  .tut-mini-wall .tmw-slot.empty { background: linear-gradient(135deg, rgba(139,90,43,.15), rgba(168,143,90,.25)); }
+  .tut-mini-wall .tmw-slot.filled { box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+
+  /* ===== RICH TUTORIAL VISUALS ===== */
+
+  /* Tile grid with labels */
+  .tut-tile-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; width: 100%; }
+  .tut-tile-grid .tut-tile-card {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 8px 4px;
+    background: rgba(255,255,255,.35);
+    border: 1px solid var(--parchment-sh);
+    border-radius: 6px;
+  }
+  .tut-tile-card .t { width: 36px; height: 36px; cursor: default; }
+  .tut-tile-card .tt-name { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--wood-d); }
+
+  /* Full mini board diagram (used for labeling parts of the board) */
+  .tut-board-diagram {
+    position: relative;
+    background: radial-gradient(ellipse at 30% 20%, #f5ebcf 0%, var(--parchment) 60%, var(--parchment-d) 100%);
+    padding: 14px;
+    border-radius: 8px;
+    box-shadow: 0 0 0 3px var(--wood), 0 0 0 5px var(--gold-d), 0 4px 12px rgba(0,0,0,.3);
+    width: 100%;
+    max-width: 420px;
+    margin: 4px auto;
+  }
+  .tut-board-content { display: flex; gap: 6px; align-items: flex-start; }
+  .tbd-pattern { display: flex; flex-direction: column; gap: 3px; padding: 5px; background: rgba(139,90,43,.08); border-radius: 4px; }
+  .tbd-row { display: flex; justify-content: flex-end; gap: 3px; height: 24px; }
+  .tbd-slot { width: 24px; height: 24px; border-radius: 3px;
+    background: linear-gradient(135deg, rgba(139,90,43,.15), rgba(168,143,90,.25));
+    box-shadow: inset 0 1px 2px rgba(139,90,43,.3); }
+  .tbd-slot.filled { background: none; box-shadow: none; }
+  .tbd-slot.filled > .t { width: 100%; height: 100%; cursor: default; }
+  .tbd-arrow { display: flex; flex-direction: column; gap: 3px; color: var(--wood); font-size: 14px; }
+  .tbd-arrow span { height: 24px; display: flex; align-items: center; justify-content: center; opacity: .5; }
+  .tbd-arrow span.ready { color: var(--accent); opacity: 1; }
+  .tbd-wall { display: flex; flex-direction: column; gap: 3px; padding: 5px; background: rgba(139,90,43,.08); border-radius: 4px; }
+  .tbd-wrow { display: flex; gap: 3px; }
+  .tbd-wslot { width: 24px; height: 24px; border-radius: 3px; position: relative; overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(139,90,43,.3); }
+  .tbd-wslot::before { content: ""; position: absolute; inset: 2px; border-radius: 2px; opacity: .2; }
+  .tbd-wslot.w-blue::before { background: var(--blue); }
+  .tbd-wslot.w-yellow::before { background: var(--yellow); }
+  .tbd-wslot.w-red::before { background: var(--red); }
+  .tbd-wslot.w-black::before { background: var(--black); }
+  .tbd-wslot.w-cyan::before { background: var(--cyan-d); }
+  .tbd-wslot.placed { box-shadow: inset 0 0 0 1px rgba(0,0,0,.2), 0 1px 2px rgba(0,0,0,.3); }
+  .tbd-wslot.placed::before { display: none; }
+  .tbd-wslot.placed > .t { position: absolute; inset: 0; width: 100%; height: 100%; cursor: default; }
+  .tbd-wslot.highlight { box-shadow: 0 0 0 2px var(--accent), 0 0 8px rgba(192,57,43,.6); z-index: 2; }
+  .tbd-wslot.highlight-gold { box-shadow: 0 0 0 2px var(--gold), 0 0 8px rgba(201,169,97,.6); z-index: 2; }
+  .tbd-floor { display: flex; gap: 2px; margin-top: 6px; padding-top: 5px; border-top: 1px dashed var(--parchment-sh); }
+  .tbd-floor-slot { width: 20px; height: 20px; border-radius: 3px;
+    background: linear-gradient(135deg, rgba(139,90,43,.12), rgba(168,143,90,.2));
+    box-shadow: inset 0 1px 2px rgba(139,90,43,.3);
+    font-size: 8px; color: var(--red-d); display: flex; align-items: center; justify-content: center;
+    font-family: 'Cinzel', serif; font-weight: 700; }
+  .tbd-floor-slot.filled { background: none; box-shadow: none; }
+  .tbd-floor-slot.filled > .t { width: 100%; height: 100%; cursor: default; }
+
+  /* Callout labels pointing at parts of the board */
+  .tut-callouts { position: relative; margin: 8px 0; }
+  .tut-callouts .callout {
+    display: inline-block;
+    background: linear-gradient(180deg, #ffe9a8, var(--gold));
+    color: var(--ink);
+    border: 1px solid var(--gold-d);
+    border-radius: 10px;
+    padding: 2px 10px;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(0,0,0,.2);
+    margin: 2px 4px;
+  }
+
+  /* Good vs Bad example panels */
+  .tut-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+  .tut-compare .ex-panel {
+    padding: 10px;
+    border-radius: 8px;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    border: 2px solid;
+  }
+  .tut-compare .ex-panel.good { background: rgba(45,90,45,.08); border-color: #4a7a4a; }
+  .tut-compare .ex-panel.bad { background: rgba(192,57,43,.08); border-color: var(--accent); }
+  .tut-compare .ex-label {
+    font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 2px; font-weight: 700;
+  }
+  .tut-compare .ex-panel.good .ex-label { color: #2d5a2d; }
+  .tut-compare .ex-panel.bad .ex-label { color: var(--red-d); }
+  .tut-compare .ex-desc { font-size: 11px; color: var(--wood-d); text-align: center; font-style: italic; line-height: 1.4; }
+
+  /* Score calculation display */
+  .tut-score-calc {
+    display: flex; align-items: center; gap: 4px;
+    font-family: 'Cinzel', serif; font-size: 13px;
+    color: var(--wood-d);
+    background: rgba(201,169,97,.15);
+    border: 1px solid var(--gold-d);
+    border-radius: 6px;
+    padding: 6px 12px;
+  }
+  .tut-score-calc .eq { color: var(--wood); margin: 0 2px; }
+  .tut-score-calc .total { color: #2d5a2d; font-size: 16px; font-weight: 900; }
+
+  /* Mini scoring example row: wall + formula */
+  .tut-scoring-ex {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px;
+    background: rgba(255,255,255,.3);
+    border: 1px solid var(--parchment-sh);
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+  .tut-scoring-ex .sx-desc { flex: 1; font-size: 12px; color: var(--ink); line-height: 1.5; }
+  .tut-scoring-ex .sx-desc b { color: var(--wood-d); }
+
+  /* Pointer arrow pointing down-right (for diagrams) */
+  .tut-pointer {
+    font-size: 18px; color: var(--accent); font-weight: 900;
+    animation: pointerBounce 1.2s ease-in-out infinite;
+  }
+  @keyframes pointerBounce { 0%,100% { transform: translateX(0); } 50% { transform: translateX(4px); } }
+
+  /* Clickable hover demonstration */
+  .tut-click-demo {
+    position: relative;
+    display: inline-block;
+  }
+  .tut-click-demo::after {
+    content: "";
+    position: absolute;
+    width: 26px; height: 26px;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    animation: clickPulse 1.6s ease-out infinite;
+    pointer-events: none;
+  }
+  @keyframes clickPulse {
+    0% { transform: translate(-50%, -50%) scale(.6); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1.8); opacity: 0; }
+  }
+
+  /* Flow diagram - pick, place, score */
+  .tut-flow {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 12px;
+    background: rgba(139,90,43,.08);
+    border-radius: 8px;
+    flex-wrap: wrap;
+  }
+  .tut-flow-step {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 8px 12px;
+    background: rgba(255,255,255,.5);
+    border: 1px solid var(--parchment-sh);
+    border-radius: 8px;
+    min-width: 90px;
+  }
+  .tut-flow-step .fs-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--gold); color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cinzel', serif; font-size: 11px; font-weight: 900;
+  }
+  .tut-flow-step .fs-label { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 1px; color: var(--wood-d); text-transform: uppercase; }
+  .tut-flow-arrow { font-size: 18px; color: var(--wood); }
 
   /* ===== ROUND SUMMARY ===== */
   #round-summary { display: none; position: fixed; inset: 0; z-index: 150; background: rgba(0,0,0,.82); backdrop-filter: blur(5px); align-items: center; justify-content: center; }
@@ -1542,7 +1796,7 @@ const Net = (() => {
 
   function host(name) {
     return new Promise((resolve, reject) => {
-      if (typeof Peer === 'undefined') return reject(new Error('PeerJS not loaded — check your internet connection.'));
+      if (typeof Peer === 'undefined') return reject(new Error('PeerJS not loaded. Check your internet connection.'));
       mode = 'host';
       myIdx = 0;
       players = [{ name: name || 'Host', idx: 0 }];
@@ -1568,7 +1822,7 @@ const Net = (() => {
       peer.on('error', err => {
         clearTimeout(timeout);
         if (err.type === 'unavailable-id') {
-          // Room ID conflict — retry with new code
+          // Room ID conflict. Retry with new code
           peer.destroy();
           host(name).then(resolve).catch(reject);
         } else {
@@ -1670,7 +1924,7 @@ const Net = (() => {
     } else if (data.t === 'action') {
       executeAction(data.action, data.args);
     } else if (data.t === 'newRound') {
-      // Host has generated new factories — apply
+      // Host has generated new factories, apply
       applyNewRound(data.fac, data.cur, data.round);
     } else if (data.t === 'state') {
       // Full state sync
@@ -1717,7 +1971,7 @@ const Net = (() => {
     S.phase = 'pick';
     for (const p of S.players) p.first = false;
     sel = null; undoState = null;
-    setStatusBar(`<span class="step-num">1</span> Round ${S.round} &mdash; ${S.players[S.cur].name}, pick tiles`);
+    setStatusBar(`<span class="step-num">1</span> Round ${S.round}. ${S.players[S.cur].name}, pick tiles`);
     render();
   }
 
@@ -1732,7 +1986,7 @@ const Net = (() => {
   function sendAction(action, args) {
     if (mode === 'local') return false;
     if (mode === 'client') {
-      if (S.cur !== myIdx) return true; // not your turn — silently ignore
+      if (S.cur !== myIdx) return true; // not your turn, silently ignore
       conns[0].send({ t: 'action', action, args });
       return true;
     }
@@ -1879,7 +2133,7 @@ function renderLobby() {
     const d = document.createElement('div');
     d.className = 'lobby-player';
     d.style.opacity = '.4';
-    d.innerHTML = `<span>${i+1}.</span> <span style="font-style:italic;">— waiting —</span>`;
+    d.innerHTML = `<span>${i+1}.</span> <span style="font-style:italic;">waiting</span>`;
     cont.appendChild(d);
   }
   // Enable/disable Start button (host only, needs >=2 players)
@@ -2102,7 +2356,7 @@ function endTurn() {
   // Status differs in online mode based on whose turn it is
   if (Net.isOnline()) {
     if (S.cur === Net.getMyIdx()) {
-      setStatus(`<span class="step-num">1</span> Your turn &mdash; pick tiles from a factory or center`);
+      setStatus(`<span class="step-num">1</span> Your turn. Pick tiles from a factory or center`);
     } else {
       setStatus(`<span class="step-num">1</span> Waiting for ${S.players[S.cur].name}…`);
     }
@@ -2294,7 +2548,7 @@ async function endRound() {
     focusPlayer(pi);
     await showBanner(p.name, 'Tallying tiles', 900);
 
-    // Wall scoring — one row at a time
+    // Wall scoring, one row at a time
     for (let r = 0; r < 5; r++) {
       if (p.pat[r].length !== r + 1) continue;
       const color = p.pat[r][0];
@@ -2384,7 +2638,7 @@ async function endRound() {
       await wait(800);
     }
 
-    // Floor penalties — flick tiles off one at a time
+    // Floor penalties, flick tiles off one at a time
     if (hasFloor) {
       const board = getBoard(pi);
       const floorEl = board.querySelector('.floor-line');
@@ -2554,7 +2808,7 @@ function closeSummaryAndContinue() {
     Net.broadcastNewRound(S.fac.map(f => [...f]), S.cur, S.round);
   }
 
-  setStatus(`<span class="step-num">1</span> Round ${S.round} &mdash; ${S.players[S.cur].name}, pick tiles`);
+  setStatus(`<span class="step-num">1</span> Round ${S.round}. ${S.players[S.cur].name}, pick tiles`);
   render();
   if (!Net.isOnline() && S.players[S.cur].isAI) scheduleAI(500);
 }
@@ -3093,108 +3347,269 @@ function restartGame() {
 const TUT = [
   {
     title: 'Welcome to Azul!',
-    body: `<p>Azul is a tile-drafting game where you compete to build the most beautiful mosaic wall. The player with the most points wins!</p>
-    <p>The game is played in <b>rounds</b>. Each round, players take turns picking tiles and placing them on their board.</p>
-    <div class="tut-visual">
-      <div class="t t-blue" style="cursor:default"></div>
-      <div class="t t-yellow" style="cursor:default"></div>
-      <div class="t t-red" style="cursor:default"></div>
-      <div class="t t-black" style="cursor:default"></div>
-      <div class="t t-cyan" style="cursor:default"></div>
+    body: `
+    <p>Azul is a tile-drafting game where you compete to build the most beautiful mosaic wall. The player with the most points wins.</p>
+    <p>There are <b>5 tile colors</b>, each with a unique symbol:</p>
+    <div class="tut-tile-grid">
+      <div class="tut-tile-card"><div class="t t-blue"></div><div class="tt-name">Blue</div></div>
+      <div class="tut-tile-card"><div class="t t-yellow"></div><div class="tt-name">Yellow</div></div>
+      <div class="tut-tile-card"><div class="t t-red"></div><div class="tt-name">Red</div></div>
+      <div class="tut-tile-card"><div class="t t-black"></div><div class="tt-name">Black</div></div>
+      <div class="tut-tile-card"><div class="t t-cyan"></div><div class="tt-name">White</div></div>
     </div>
-    <p>There are <b>5 tile colors</b>, each with a unique symbol for easy identification.</p>`
+    <p>Each round, every player follows the same simple flow:</p>
+    <div class="tut-flow">
+      <div class="tut-flow-step"><div class="fs-num">1</div><div class="fs-label">Pick</div></div>
+      <div class="tut-flow-arrow">\u2192</div>
+      <div class="tut-flow-step"><div class="fs-num">2</div><div class="fs-label">Place</div></div>
+      <div class="tut-flow-arrow">\u2192</div>
+      <div class="tut-flow-step"><div class="fs-num">3</div><div class="fs-label">Score</div></div>
+    </div>`
   },
   {
     title: 'Step 1: Pick Tiles',
-    body: `<p>On your turn, pick <b>all tiles of one color</b> from either:</p>
-    <p><b>A Factory Display</b> (circular) &mdash; take all tiles of your chosen color. The remaining tiles slide to the center.</p>
-    <div class="tut-visual">
-      <div style="width:100px;height:100px;background:radial-gradient(circle,#252548,#1a1a36);border:2px solid var(--accent);border-radius:50%;display:grid;grid-template-columns:1fr 1fr;place-items:center;padding:20px;gap:2px;">
-        <div class="t t-blue" style="width:26px;height:26px;cursor:default"></div>
-        <div class="t t-red" style="width:26px;height:26px;cursor:default"></div>
-        <div class="t t-blue" style="width:26px;height:26px;cursor:default"></div>
-        <div class="t t-yellow" style="width:26px;height:26px;cursor:default"></div>
+    body: `
+    <p><b>Example:</b> You click on a <b>blue</b> tile in this factory.</p>
+    <div class="tut-visual" style="gap:18px;">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+        <div class="tut-factory">
+          <div class="t t-blue"></div>
+          <div class="t t-red"></div>
+          <div class="tut-click-demo"><div class="t t-blue"></div></div>
+          <div class="t t-yellow"></div>
+        </div>
+        <span style="font-size:10px; color:var(--wood); font-style:italic;">Before</span>
       </div>
-      <div style="font-size:24px;color:#666">\u2192</div>
-      <div style="text-align:center;font-size:12px;color:#aaa;">Take 2 blue<br>Red + Yellow go to center</div>
+      <div class="tut-arrow">\u2192</div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+          <div style="display:flex; gap:3px; padding:6px; background:rgba(139,90,43,.1); border-radius:6px;">
+            <div class="t t-blue" style="width:26px; height:26px; cursor:default;"></div>
+            <div class="t t-blue" style="width:26px; height:26px; cursor:default;"></div>
+          </div>
+          <span style="font-size:10px; color:var(--wood); font-style:italic;">You get</span>
+        </div>
+      </div>
+      <div class="tut-arrow">+</div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+        <div style="display:flex; gap:3px; padding:6px; background:rgba(40,60,90,.6); border:1px solid var(--gold-d); border-radius:6px;">
+          <div class="t t-red" style="width:26px; height:26px; cursor:default;"></div>
+          <div class="t t-yellow" style="width:26px; height:26px; cursor:default;"></div>
+        </div>
+        <span style="font-size:10px; color:var(--wood); font-style:italic;">Sent to center</span>
+      </div>
     </div>
-    <p><b>The Center</b> &mdash; take all tiles of one color from the shared center pool.</p>
-    <p style="background:rgba(192,57,43,.12); border-left:3px solid var(--accent); padding:8px 12px; border-radius:6px;">\u26A0 The <b>first</b> player to take from the center each round also takes the <b>"1st" token</b> &mdash; it lands on your floor line and costs <b>\u22121 point</b> at round end. In exchange, you go first next round.</p>`
+    <ul>
+      <li><b>Factory Display</b>: take every tile of your chosen color; <i>the rest slide to the center pool</i>.</li>
+      <li><b>Center Pool</b>: take every tile of one color from the shared pool.</li>
+    </ul>
+    <div class="tut-warn">The <b>first</b> player to take from the center each round also picks up the <b>"1st" token</b>. It costs <b>\u22121 point</b> but you go first next round.</div>`
   },
   {
     title: 'Step 2: Place Tiles',
-    body: `<p>After picking, place your tiles onto one of the 5 <b>pattern rows</b> on the left side of your board.</p>
-    <div class="tut-visual" style="flex-direction:column; align-items:flex-start; gap:3px;">
-      <div style="display:flex;gap:3px;justify-content:flex-end;width:100%;">
-        <div style="width:30px;height:30px;border:2px solid var(--blue-d);border-radius:4px;background:var(--blue);"></div>
-      </div>
-      <div style="display:flex;gap:3px;justify-content:flex-end;width:100%;">
-        <div style="width:30px;height:30px;border:1.5px solid #2a2a4e;border-radius:4px;background:rgba(255,255,255,.02);"></div>
-        <div style="width:30px;height:30px;border:2px solid var(--red-d);border-radius:4px;background:var(--red);"></div>
-      </div>
-      <div style="display:flex;gap:3px;justify-content:flex-end;width:100%;">
-        <div style="width:30px;height:30px;border:1.5px solid #2a2a4e;border-radius:4px;background:rgba(255,255,255,.02);"></div>
-        <div style="width:30px;height:30px;border:1.5px solid #2a2a4e;border-radius:4px;background:rgba(255,255,255,.02);"></div>
-        <div style="width:30px;height:30px;border:2px solid var(--yellow-d);border-radius:4px;background:var(--yellow);"></div>
+    body: `
+    <p>Drop your tiles onto a <b>pattern row</b>. Each row has a different capacity:</p>
+    <div class="tut-visual">
+      <div class="tut-pattern-rows" style="gap:5px;">
+        <div class="tpr-row" style="align-items:center; gap:8px;"><span style="font-size:10px; color:var(--wood); font-family:'Cinzel',serif; min-width:56px;">Row 1:</span><div class="tpr-slot"></div></div>
+        <div class="tpr-row" style="align-items:center; gap:8px;"><span style="font-size:10px; color:var(--wood); font-family:'Cinzel',serif; min-width:56px;">Row 2:</span><div class="tpr-slot"></div><div class="tpr-slot"></div></div>
+        <div class="tpr-row" style="align-items:center; gap:8px;"><span style="font-size:10px; color:var(--wood); font-family:'Cinzel',serif; min-width:56px;">Row 3:</span><div class="tpr-slot"></div><div class="tpr-slot"></div><div class="tpr-slot"></div></div>
+        <div class="tpr-row" style="align-items:center; gap:8px;"><span style="font-size:10px; color:var(--wood); font-family:'Cinzel',serif; min-width:56px;">Row 4:</span><div class="tpr-slot"></div><div class="tpr-slot"></div><div class="tpr-slot"></div><div class="tpr-slot"></div></div>
+        <div class="tpr-row" style="align-items:center; gap:8px;"><span style="font-size:10px; color:var(--wood); font-family:'Cinzel',serif; min-width:56px;">Row 5:</span><div class="tpr-slot"></div><div class="tpr-slot"></div><div class="tpr-slot"></div><div class="tpr-slot"></div><div class="tpr-slot"></div></div>
       </div>
     </div>
-    <p><b>Rules:</b></p>
-    <p>&bull; Each row can only hold <b>one color</b><br>
-    &bull; Row 1 fits 1 tile, row 2 fits 2, etc.<br>
-    &bull; If a color is already on your wall in that row, you can't place it there<br>
-    &bull; Overflow tiles go to the <b>floor line</b> (penalty!)</p>`
+
+    <p style="margin-top:10px;"><b>Where can your 3 red tiles go?</b></p>
+    <div class="tut-compare">
+      <div class="ex-panel good">
+        <div class="ex-label">\u2713 GOOD</div>
+        <div class="tut-pattern-rows" style="padding:6px;">
+          <div class="tpr-row"><div class="t t-red" style="width:24px;height:24px;cursor:default;"></div><div class="t t-red" style="width:24px;height:24px;cursor:default;"></div><div class="t t-red" style="width:24px;height:24px;cursor:default;"></div></div>
+        </div>
+        <div class="ex-desc">Row 3 fits exactly 3. Completes it!</div>
+      </div>
+      <div class="ex-panel bad">
+        <div class="ex-label">\u2717 OVERFLOW</div>
+        <div class="tut-pattern-rows" style="padding:6px;">
+          <div class="tpr-row"><div class="tpr-slot"></div><div class="t t-red" style="width:24px;height:24px;cursor:default;"></div></div>
+        </div>
+        <div class="ex-desc">Row 2 only fits 2. 1 spills to floor (\u22121 pt)</div>
+      </div>
+    </div>
+
+    <ul style="margin-top:10px;">
+      <li>Each row holds only <b>one color</b>.</li>
+      <li>Overflow goes to the <b>floor line</b> (penalty points).</li>
+      <li>You can't reuse a color in a row that already has it on the wall.</li>
+    </ul>`
   },
   {
-    title: 'Scoring: Wall Tiling',
-    body: `<p>When all factories &amp; center are empty, the round ends. Each <b>completed pattern row</b> moves one tile to the matching wall position.</p>
-    <div class="tut-visual" style="flex-direction:column; gap:8px;">
-      <div style="display:flex; align-items:center; gap:8px;">
-        <div style="display:flex;gap:2px;">
-          <div style="width:28px;height:28px;border:2px solid var(--blue-d);border-radius:4px;background:var(--blue);"></div>
-          <div style="width:28px;height:28px;border:2px solid var(--blue-d);border-radius:4px;background:var(--blue);"></div>
-          <div style="width:28px;height:28px;border:2px solid var(--blue-d);border-radius:4px;background:var(--blue);"></div>
-        </div>
-        <span style="color:var(--accent);font-size:20px;">\u2192</span>
-        <div style="width:28px;height:28px;border:2px solid var(--blue-d);border-radius:4px;background:var(--blue);opacity:1;box-shadow:0 0 8px var(--blue);"></div>
+    title: 'Scoring: Placing Tiles',
+    body: `
+    <p>A tile you place scores based on its <b>neighbors in the same row + column</b>. Here are three examples. The <span style="background:var(--gold); color:var(--ink); padding:1px 4px; border-radius:3px; font-weight:700;">glowing tile</span> is the one just placed:</p>
+
+    <div class="tut-scoring-ex">
+      <div class="tut-mini-wall">
+        <div class="tmw-row"><div class="tmw-slot empty"></div><div class="tmw-slot empty"></div><div class="tmw-slot empty"></div><div class="tmw-slot empty"></div><div class="tmw-slot empty"></div></div>
+        <div class="tmw-row"><div class="tmw-slot empty"></div><div class="tmw-slot empty"></div><div class="t t-blue" style="width:24px;height:24px;cursor:default;box-shadow:0 0 0 2px var(--gold),0 0 6px rgba(201,169,97,.7);"></div><div class="tmw-slot empty"></div><div class="tmw-slot empty"></div></div>
+        <div class="tmw-row"><div class="tmw-slot empty"></div><div class="tmw-slot empty"></div><div class="tmw-slot empty"></div><div class="tmw-slot empty"></div><div class="tmw-slot empty"></div></div>
       </div>
-      <div style="font-size:12px;color:#aaa;text-align:center;">3 blue tiles complete row 3 \u2192 1 tile placed on wall</div>
+      <div class="sx-desc">
+        <b>Isolated tile</b> (no neighbors)<br>
+        <span class="tut-score-calc" style="margin-top:4px;"><span class="total">1</span> <span style="font-size:11px;">pt</span></span>
+      </div>
     </div>
-    <p><b>Points for each placed tile:</b></p>
-    <p>&bull; <b>Isolated tile:</b> 1 point<br>
-    &bull; <b>Adjacent tiles:</b> Count all connected tiles horizontally + vertically</p>
-    <p>The <b>floor line</b> deducts points: -1, -1, -2, -2, -2, -3, -3</p>`
+
+    <div class="tut-scoring-ex">
+      <div class="tut-mini-wall">
+        <div class="tmw-row"><div class="tmw-slot empty"></div><div class="tmw-slot empty"></div><div class="tmw-slot empty"></div><div class="tmw-slot empty"></div><div class="tmw-slot empty"></div></div>
+        <div class="tmw-row"><div class="t t-yellow" style="width:24px;height:24px;cursor:default;"></div><div class="t t-red" style="width:24px;height:24px;cursor:default;"></div><div class="t t-blue" style="width:24px;height:24px;cursor:default;box-shadow:0 0 0 2px var(--gold),0 0 6px rgba(201,169,97,.7);"></div><div class="tmw-slot empty"></div><div class="tmw-slot empty"></div></div>
+        <div class="tmw-row"><div class="tmw-slot empty"></div><div class="tmw-slot empty"></div><div class="tmw-slot empty"></div><div class="tmw-slot empty"></div><div class="tmw-slot empty"></div></div>
+      </div>
+      <div class="sx-desc">
+        <b>3 in a row</b> (horizontal cluster)<br>
+        <span class="tut-score-calc" style="margin-top:4px;"><span class="total">3</span> <span style="font-size:11px;">pts</span></span>
+      </div>
+    </div>
+
+    <div class="tut-scoring-ex">
+      <div class="tut-mini-wall">
+        <div class="tmw-row"><div class="tmw-slot empty"></div><div class="tmw-slot empty"></div><div class="t t-blue" style="width:24px;height:24px;cursor:default;"></div><div class="tmw-slot empty"></div><div class="tmw-slot empty"></div></div>
+        <div class="tmw-row"><div class="t t-yellow" style="width:24px;height:24px;cursor:default;"></div><div class="t t-red" style="width:24px;height:24px;cursor:default;"></div><div class="t t-blue" style="width:24px;height:24px;cursor:default;box-shadow:0 0 0 2px var(--gold),0 0 6px rgba(201,169,97,.7);"></div><div class="t t-black" style="width:24px;height:24px;cursor:default;"></div><div class="tmw-slot empty"></div></div>
+        <div class="tmw-row"><div class="tmw-slot empty"></div><div class="tmw-slot empty"></div><div class="t t-red" style="width:24px;height:24px;cursor:default;"></div><div class="tmw-slot empty"></div><div class="tmw-slot empty"></div></div>
+      </div>
+      <div class="sx-desc">
+        <b>Cross cluster</b> (4 in row × 3 in column)<br>
+        <span class="tut-score-calc" style="margin-top:4px;">4 <span class="eq">+</span> 3 <span class="eq">=</span> <span class="total">7</span> <span style="font-size:11px;">pts</span></span>
+      </div>
+    </div>
+
+    <p style="margin-top:8px;"><b>Floor line penalties</b> per tile:</p>
+    <div style="display:flex; gap:3px; justify-content:center; padding:6px; background:rgba(192,57,43,.08); border-radius:6px;">
+      <span style="display:inline-flex; flex-direction:column; align-items:center;"><span style="width:22px; height:22px; background:var(--parchment-sh); border-radius:3px;"></span><span style="font-family:'Cinzel',serif; font-size:10px; color:var(--red-d); font-weight:700;">\u22121</span></span>
+      <span style="display:inline-flex; flex-direction:column; align-items:center;"><span style="width:22px; height:22px; background:var(--parchment-sh); border-radius:3px;"></span><span style="font-family:'Cinzel',serif; font-size:10px; color:var(--red-d); font-weight:700;">\u22121</span></span>
+      <span style="display:inline-flex; flex-direction:column; align-items:center;"><span style="width:22px; height:22px; background:var(--parchment-sh); border-radius:3px;"></span><span style="font-family:'Cinzel',serif; font-size:10px; color:var(--red-d); font-weight:700;">\u22122</span></span>
+      <span style="display:inline-flex; flex-direction:column; align-items:center;"><span style="width:22px; height:22px; background:var(--parchment-sh); border-radius:3px;"></span><span style="font-family:'Cinzel',serif; font-size:10px; color:var(--red-d); font-weight:700;">\u22122</span></span>
+      <span style="display:inline-flex; flex-direction:column; align-items:center;"><span style="width:22px; height:22px; background:var(--parchment-sh); border-radius:3px;"></span><span style="font-family:'Cinzel',serif; font-size:10px; color:var(--red-d); font-weight:700;">\u22122</span></span>
+      <span style="display:inline-flex; flex-direction:column; align-items:center;"><span style="width:22px; height:22px; background:var(--parchment-sh); border-radius:3px;"></span><span style="font-family:'Cinzel',serif; font-size:10px; color:var(--red-d); font-weight:700;">\u22123</span></span>
+      <span style="display:inline-flex; flex-direction:column; align-items:center;"><span style="width:22px; height:22px; background:var(--parchment-sh); border-radius:3px;"></span><span style="font-family:'Cinzel',serif; font-size:10px; color:var(--red-d); font-weight:700;">\u22123</span></span>
+    </div>`
   },
   {
     title: 'Game End & Bonuses',
-    body: `<p>The game ends when any player completes a <b>full horizontal row</b> on their wall. Then bonus points are awarded:</p>
-    <div class="tut-visual" style="flex-direction:column; gap:6px; font-size:14px;">
-      <div style="display:flex;justify-content:space-between;width:100%;padding:4px 8px;background:rgba(255,255,255,.04);border-radius:6px;">
-        <span>Complete row (5 tiles across)</span>
-        <span style="color:#4ade80;font-weight:700;">+2 pts</span>
+    body: `
+    <p>The game ends when any player completes a <b>full horizontal row</b>. Then <b>bonus points</b> are awarded for patterns:</p>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; margin:10px 0;">
+      <!-- Row bonus -->
+      <div class="ex-panel" style="padding:8px; background:rgba(255,255,255,.35); border:2px solid var(--parchment-sh); border-radius:8px; display:flex; flex-direction:column; align-items:center; gap:6px;">
+        <span class="pts" style="font-family:'Cinzel',serif; font-weight:900; font-size:20px; color:#2d5a2d;">+2</span>
+        <div class="tut-mini-wall" style="padding:3px;">
+          <div class="tmw-row"><div class="t t-blue" style="width:18px;height:18px;cursor:default;"></div><div class="t t-yellow" style="width:18px;height:18px;cursor:default;"></div><div class="t t-red" style="width:18px;height:18px;cursor:default;"></div><div class="t t-black" style="width:18px;height:18px;cursor:default;"></div><div class="t t-cyan" style="width:18px;height:18px;cursor:default;"></div></div>
+          <div class="tmw-row"><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div></div>
+          <div class="tmw-row"><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div></div>
+        </div>
+        <span style="font-size:10px; color:var(--wood-d); font-family:'Cinzel',serif; letter-spacing:1px; text-align:center;">COMPLETE<br>ROW</span>
       </div>
-      <div style="display:flex;justify-content:space-between;width:100%;padding:4px 8px;background:rgba(255,255,255,.04);border-radius:6px;">
-        <span>Complete column (5 tiles down)</span>
-        <span style="color:#4ade80;font-weight:700;">+7 pts</span>
+      <!-- Column bonus -->
+      <div class="ex-panel" style="padding:8px; background:rgba(255,255,255,.35); border:2px solid var(--parchment-sh); border-radius:8px; display:flex; flex-direction:column; align-items:center; gap:6px;">
+        <span class="pts" style="font-family:'Cinzel',serif; font-weight:900; font-size:20px; color:#2d5a2d;">+7</span>
+        <div class="tut-mini-wall" style="padding:3px;">
+          <div class="tmw-row"><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="t t-red" style="width:18px;height:18px;cursor:default;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div></div>
+          <div class="tmw-row"><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="t t-yellow" style="width:18px;height:18px;cursor:default;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div></div>
+          <div class="tmw-row"><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="t t-blue" style="width:18px;height:18px;cursor:default;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div></div>
+          <div class="tmw-row"><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="t t-cyan" style="width:18px;height:18px;cursor:default;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div></div>
+          <div class="tmw-row"><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="t t-black" style="width:18px;height:18px;cursor:default;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div></div>
+        </div>
+        <span style="font-size:10px; color:var(--wood-d); font-family:'Cinzel',serif; letter-spacing:1px; text-align:center;">COMPLETE<br>COLUMN</span>
       </div>
-      <div style="display:flex;justify-content:space-between;width:100%;padding:4px 8px;background:rgba(255,255,255,.04);border-radius:6px;">
-        <span>All 5 of one color on wall</span>
-        <span style="color:#4ade80;font-weight:700;">+10 pts</span>
+      <!-- Color bonus -->
+      <div class="ex-panel" style="padding:8px; background:rgba(255,255,255,.35); border:2px solid var(--parchment-sh); border-radius:8px; display:flex; flex-direction:column; align-items:center; gap:6px;">
+        <span class="pts" style="font-family:'Cinzel',serif; font-weight:900; font-size:20px; color:#2d5a2d;">+10</span>
+        <div class="tut-mini-wall" style="padding:3px;">
+          <div class="tmw-row"><div class="t t-blue" style="width:18px;height:18px;cursor:default;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div></div>
+          <div class="tmw-row"><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="t t-blue" style="width:18px;height:18px;cursor:default;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div></div>
+          <div class="tmw-row"><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="t t-blue" style="width:18px;height:18px;cursor:default;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div></div>
+          <div class="tmw-row"><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="t t-blue" style="width:18px;height:18px;cursor:default;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div></div>
+          <div class="tmw-row"><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="tmw-slot empty" style="width:18px;height:18px;"></div><div class="t t-blue" style="width:18px;height:18px;cursor:default;"></div></div>
+        </div>
+        <span style="font-size:10px; color:var(--wood-d); font-family:'Cinzel',serif; letter-spacing:1px; text-align:center;">ALL 5<br>OF A COLOR</span>
       </div>
     </div>
-    <p><b>Tips:</b> Try to build adjacent clusters for big points. Columns are worth more than rows. Watch what your opponent is collecting!</p>`
+
+    <p><b>Strategy tips</b></p>
+    <ul>
+      <li>Build <b>adjacent clusters</b>. Each neighbor multiplies your score.</li>
+      <li><b>Columns (+7)</b> are worth far more than <b>rows (+2)</b>.</li>
+      <li>Collecting all 5 of one color (<b>+10</b>) is the single biggest bonus.</li>
+      <li>Watch your opponent. Denying a color they need can matter.</li>
+    </ul>`
   },
   {
     title: 'Controls',
-    body: `<p><b>Playing is simple &mdash; just click!</b></p>
-    <div class="tut-visual" style="flex-direction:column; gap:8px; font-size:13px; text-align:left;">
-      <div><span class="step-num" style="display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;align-items:center;justify-content:center;margin-right:6px;">1</span> <b>Click a tile</b> in a factory or center to pick all tiles of that color</div>
-      <div><span class="step-num" style="display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;align-items:center;justify-content:center;margin-right:6px;">2</span> <b>Click a pattern row</b> (highlighted green) to place tiles, or click the floor line to discard</div>
-      <div style="margin-top:4px; color:#888;">\u2022 <b>Undo</b> button appears if you change your mind after picking<br>
-      \u2022 <b>Ghost tiles</b> preview where tiles will land<br>
-      \u2022 <b>Pulsing arrows</b> show which rows are ready to score<br>
-      \u2022 Press <span class="tut-key">?</span> anytime to reopen this tutorial</div>
+    body: `
+    <p><b>Playing is simple. Just click.</b></p>
+
+    <!-- Step 1: click a tile -->
+    <div style="display:flex; gap:12px; align-items:center; padding:10px; background:rgba(255,255,255,.35); border:1px solid var(--parchment-sh); border-radius:8px; margin-bottom:8px;">
+      <span class="num-badge" style="flex-shrink:0;">1</span>
+      <div class="tut-factory" style="width:70px; height:70px; padding:12px;">
+        <div class="t t-blue" style="width:18px; height:18px; cursor:default;"></div>
+        <div class="t t-red" style="width:18px; height:18px; cursor:default;"></div>
+        <div class="tut-click-demo"><div class="t t-blue" style="width:18px; height:18px; cursor:default;"></div></div>
+        <div class="t t-yellow" style="width:18px; height:18px; cursor:default;"></div>
+      </div>
+      <div style="flex:1; font-size:13px; color:var(--ink); line-height:1.5;">
+        <b>Click a tile</b> in a factory or the center pool to take every tile of that color.
+      </div>
     </div>
-    <p style="color:var(--accent);font-weight:600;text-align:center;margin-top:8px;">Have fun!</p>`
+
+    <!-- Step 2: click a pattern row -->
+    <div style="display:flex; gap:12px; align-items:center; padding:10px; background:rgba(255,255,255,.35); border:1px solid var(--parchment-sh); border-radius:8px;">
+      <span class="num-badge" style="flex-shrink:0;">2</span>
+      <div class="tut-pattern-rows" style="padding:4px;">
+        <div class="tpr-row"><div class="tpr-slot" style="width:22px; height:22px;"></div></div>
+        <div class="tpr-row" style="background:rgba(201,169,97,.25); border-radius:3px; padding:1px;">
+          <div class="tpr-slot" style="width:22px; height:22px; border:1px dashed var(--accent); opacity:.5;"></div>
+          <div class="tpr-slot" style="width:22px; height:22px; border:1px dashed var(--accent); opacity:.5;"></div>
+        </div>
+        <div class="tpr-row"><div class="tpr-slot" style="width:22px; height:22px;"></div><div class="tpr-slot" style="width:22px; height:22px;"></div><div class="tpr-slot" style="width:22px; height:22px;"></div></div>
+      </div>
+      <div style="flex:1; font-size:13px; color:var(--ink); line-height:1.5;">
+        <b>Click a highlighted row</b> to place your tiles, or click the <b>floor line</b> to discard.
+      </div>
+    </div>
+
+    <p style="margin-top:12px;"><b>Helpful cues you'll see</b></p>
+
+    <!-- Ghost tiles preview -->
+    <div style="display:flex; gap:12px; align-items:center; padding:8px 10px; background:rgba(255,255,255,.25); border-radius:6px; margin-bottom:6px;">
+      <div style="display:flex; gap:2px;">
+        <div class="t t-red" style="width:20px; height:20px; cursor:default; opacity:.5; box-shadow:inset 0 0 0 2px var(--accent); background:transparent;"></div>
+        <div class="t t-red" style="width:20px; height:20px; cursor:default; opacity:.5; box-shadow:inset 0 0 0 2px var(--accent); background:transparent;"></div>
+      </div>
+      <span style="font-size:12px; color:var(--ink);"><b>Ghost tiles</b> preview where your picked tiles will land.</span>
+    </div>
+
+    <!-- Pulsing arrows -->
+    <div style="display:flex; gap:12px; align-items:center; padding:8px 10px; background:rgba(255,255,255,.25); border-radius:6px; margin-bottom:6px;">
+      <span style="color:var(--accent); font-size:18px; font-weight:900; animation:pulse 1s infinite; text-shadow:0 0 4px var(--accent);">\u2192</span>
+      <span style="font-size:12px; color:var(--ink);"><b>Pulsing arrows</b> show rows that are full and ready to score.</span>
+    </div>
+
+    <!-- Undo button -->
+    <div style="display:flex; gap:12px; align-items:center; padding:8px 10px; background:rgba(255,255,255,.25); border-radius:6px; margin-bottom:6px;">
+      <button style="padding:3px 12px; border-radius:4px; border:1px solid var(--gold-d); background:rgba(0,0,0,.25); color:var(--gold); font-size:10px; cursor:default; font-family:'Cinzel',serif; letter-spacing:1px;">UNDO</button>
+      <span style="font-size:12px; color:var(--ink);"><b>Undo</b> appears after picking. Change your mind freely.</span>
+    </div>
+
+    <!-- Tutorial key -->
+    <div style="display:flex; gap:12px; align-items:center; padding:8px 10px; background:rgba(255,255,255,.25); border-radius:6px;">
+      <span class="tut-key">?</span>
+      <span style="font-size:12px; color:var(--ink);">Press <b>?</b> anytime to reopen this tutorial.</span>
+    </div>
+
+    <p style="color:var(--accent); font-weight:700; text-align:center; font-size:17px; margin-top:14px; font-family:'Cinzel',serif; letter-spacing:3px;">HAVE FUN!</p>`
   }
 ];
 

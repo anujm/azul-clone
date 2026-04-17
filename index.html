@@ -371,6 +371,8 @@
   }
   .player-board.active { box-shadow: 0 0 0 4px var(--wood), 0 0 0 6px var(--wood-d), 0 0 0 7px var(--gold), inset 0 0 30px rgba(139,90,43,.15), inset 0 0 0 1px rgba(168,143,90,.3), 0 8px 28px rgba(201,169,97,.35), 0 3px 8px rgba(0,0,0,.3); }
   .player-board.inactive { opacity: .78; filter: saturate(.85); }
+  .player-board.disconnected { opacity: .5; filter: saturate(.4) grayscale(.35); }
+  .player-board.disconnected .player-name { text-decoration: line-through; }
 
   .player-header {
     display: flex;
@@ -435,7 +437,9 @@
   }
   .p-row.can-place { cursor: pointer; background: rgba(201,169,97,.18); box-shadow: inset 0 0 0 1px var(--gold); }
   .p-row.can-place:hover { background: rgba(201,169,97,.35); }
-  .p-row.can-place::before { content: "\2190  place here"; position: absolute; left: -86px; top: 50%; transform: translateY(-50%); font-size: 10px; color: var(--wood-d); font-family: 'Cinzel', serif; letter-spacing: 1px; font-weight: 700; white-space: nowrap; pointer-events: none; }
+  /* Visual affordance for valid rows: gold outline + background tint (applied via .can-place).
+     We no longer render a floating "place here" label here because it overflows outside the card
+     when the board sits near the viewport edge. The status bar already instructs the user. */
   .p-row.cant-place { cursor: not-allowed; opacity: .45; }
 
   .p-slot {
@@ -1244,8 +1248,8 @@
 
   /* ===== MOBILE (phones / narrow tablets) ===== */
   @media (max-width: 640px) {
-    /* Prevent iOS zoom on input focus */
-    input, button, select, textarea { font-size: 16px !important; }
+    /* Prevent iOS zoom when focusing text inputs (iOS zooms if font-size < 16px). Only applied to text inputs, not buttons. */
+    input[type="text"], input:not([type]), input[type="search"], input[type="email"], input[type="number"], textarea, select { font-size: 16px !important; }
 
     /* Game container */
     #game { padding: 12px 8px 16px; gap: 14px; }
@@ -1262,10 +1266,11 @@
 
     /* Factories section */
     #factories-section .section-label { font-size: 9px; letter-spacing: 3px; margin-bottom: 10px; }
-    #factories-area { gap: 10px; }
+    /* Row-gap is larger so factory numbers (positioned below) don't overlap the next row */
+    #factories-area { gap: 10px 10px; row-gap: 22px; }
     .factory { width: 88px; height: 88px; padding: 14px; gap: 3px; }
     .factory .t { width: 26px; height: 26px; }
-    .factory::after { bottom: -18px; font-size: 9px; }
+    .factory::after { bottom: -14px; font-size: 9px; }
     #center-pool { padding: 10px 12px; max-width: 280px; }
     #center-pool::before { font-size: 9px; letter-spacing: 2px; top: -8px; }
     #center-pool .t { width: 28px; height: 28px; }
@@ -1416,8 +1421,8 @@
     .t:hover { transform: none; box-shadow: inset 0 1px 0 rgba(255,255,255,.3), inset 0 -2px 2px rgba(0,0,0,.25), 0 2px 3px rgba(0,0,0,.35); }
     .factory:hover { transform: none; }
     .btn:active, .icon-btn:active { opacity: .7; }
-    /* Remove 300ms tap delay */
-    * { touch-action: manipulation; }
+    /* Remove 300ms tap delay on interactive elements only (avoids blocking pinch-zoom on the page) */
+    button, input, .t, .factory, #center-pool, .p-row, .floor-line, .setup-card, .lobby-player, .am-track, .am-speed-btn, .am-switch, .tut-dot, .icon-btn { touch-action: manipulation; }
     /* Ensure clickable tiles have good tap-target size feel */
     .factory .t, #center-pool .t { cursor: pointer; }
   }
@@ -1976,9 +1981,10 @@ const Net = (() => {
     }
   }
 
-  function host(name) {
+  function host(name, retryCount = 0) {
     return new Promise((resolve, reject) => {
       if (typeof Peer === 'undefined') return reject(new Error('PeerJS not loaded. Check your internet connection.'));
+      if (retryCount > 5) return reject(new Error('Could not allocate a room code. Please try again.'));
       mode = 'host';
       myIdx = 0;
       players = [{ name: name || 'Host', idx: 0 }];
@@ -2004,9 +2010,9 @@ const Net = (() => {
       peer.on('error', err => {
         clearTimeout(timeout);
         if (err.type === 'unavailable-id') {
-          // Room ID conflict. Retry with new code
+          // Room ID conflict. Retry with new code (bounded).
           peer.destroy();
-          host(name).then(resolve).catch(reject);
+          host(name, retryCount + 1).then(resolve).catch(reject);
         } else {
           reject(err);
         }
@@ -2050,15 +2056,21 @@ const Net = (() => {
 
   function onPeerDisconnect(conn) {
     conns = conns.filter(c => c !== conn);
-    if (conn.playerIdx != null) {
-      const removed = players[conn.playerIdx];
-      if (removed) removed.disconnected = true;
+    const playerIdx = conn.playerIdx;
+    if (playerIdx == null) return;
+
+    const removed = players[playerIdx];
+    if (removed) removed.disconnected = true;
+
+    if (!isStarted) {
+      // Pre-game: just update lobby
       broadcastLobby();
-      if (isStarted) {
-        // Show notice in-game
-        setOnlineNotice((removed?.name || 'A player') + ' disconnected');
-      }
+      return;
     }
+
+    // In-game: treat disconnect as a forfeit action so all peers stay in sync
+    setOnlineNotice((removed?.name || 'A player') + ' disconnected');
+    applyAndRebroadcast('forfeit', [playerIdx]);
   }
 
   function onHostDisconnect() {
@@ -2071,8 +2083,9 @@ const Net = (() => {
   function handleHostMsg(conn, data) {
     if (data.t === 'join') {
       const name = (data.name || 'Guest').slice(0, 14);
+      if (isStarted) { conn.send({ t: 'reject', reason: 'Game already in progress' }); setTimeout(() => { try { conn.close(); } catch(e){} }, 200); return; }
       const idx = players.length;
-      if (idx >= 4) { conn.send({ t: 'reject', reason: 'Room full' }); conn.close(); return; }
+      if (idx >= 4) { conn.send({ t: 'reject', reason: 'Room full (4 players max)' }); setTimeout(() => { try { conn.close(); } catch(e){} }, 200); return; }
       conn.playerIdx = idx;
       players.push({ name, idx, conn });
       conn.send({ t: 'welcome', idx, players: players.map(p => ({ name: p.name, idx: p.idx })) });
@@ -2104,6 +2117,10 @@ const Net = (() => {
       isStarted = true;
       startOnlineGameFromHost(data);
     } else if (data.t === 'action') {
+      // Show disconnect notice on clients too
+      if (data.action === 'forfeit' && S.players && S.players[data.args[0]]) {
+        setOnlineNotice((S.players[data.args[0]].name || 'A player') + ' disconnected');
+      }
       executeAction(data.action, data.args);
     } else if (data.t === 'newRound') {
       // Host has generated new factories, apply
@@ -2198,6 +2215,7 @@ const Net = (() => {
     if (action === 'pick') _pickTilesLocal(...args);
     else if (action === 'place') _placeTilesLocal(...args);
     else if (action === 'undo') _undoPickLocal();
+    else if (action === 'forfeit') _forfeitPlayer(...args);
   }
 
   function isOnline() { return mode !== 'local'; }
@@ -2543,10 +2561,109 @@ function _placeTilesLocal(row) {
   endTurn();
 }
 
+// Find the next connected player (online mode). In local mode this is just the next player.
+function nextActivePlayerIdx(from) {
+  for (let i = 1; i <= CFG.np; i++) {
+    const idx = (from + i) % CFG.np;
+    if (!S.players[idx].disconnected) return idx;
+  }
+  return from; // everyone else disconnected
+}
+
+// Handle a player leaving the game mid-play. Called on all peers via the 'forfeit' action
+// so every peer mutates state identically and stays in lockstep.
+function _forfeitPlayer(playerIdx) {
+  const p = S.players[playerIdx];
+  if (!p || p.disconnected || S.over) return; // idempotent guard
+  p.disconnected = true;
+
+  // If it was the disconnected player's turn, resolve their state first.
+  if (S.cur === playerIdx) {
+    if (S.phase === 'place' && sel) {
+      // Their picked tiles are in limbo. Dump them on the floor line (penalty).
+      const p2 = S.players[playerIdx];
+      for (let i = 0; i < sel.count; i++) {
+        if (p2.floor.length < 7) p2.floor.push(sel.color);
+      }
+      sel = null;
+      undoState = null;
+      S.phase = 'pick';
+    }
+    S.cur = nextActivePlayerIdx(S.cur);
+  }
+
+  const activeCount = S.players.filter(pp => !pp.disconnected).length;
+  const isTwoPlayer = CFG.np === 2;
+
+  // HYBRID END-BY-FORFEIT:
+  //   - 2-player games: any disconnect ends the game (remaining player wins)
+  //   - 3+ player games: keep playing until only 1 player remains
+  if (isTwoPlayer || activeCount <= 1) {
+    endGameByForfeit();
+    return;
+  }
+
+  // Round ended because forfeit emptied the table
+  const allEmpty = S.fac.every(f => !f.length) && !S.ctr.length;
+  if (allEmpty && !S.over && S.phase === 'pick') {
+    render();
+    endRound();
+    return;
+  }
+
+  // Status update for the new current player
+  if (Net.isOnline()) {
+    if (S.cur === Net.getMyIdx()) {
+      setStatus(`<span class="step-num">1</span> ${p.name} disconnected. Your turn, pick tiles.`);
+    } else if (S.phase === 'pick') {
+      setStatus(`<span class="step-num">1</span> ${p.name} disconnected. Waiting for ${S.players[S.cur].name}…`);
+    }
+  }
+  render();
+}
+
+// End the game by forfeit. Applies final bonuses to remaining connected players
+// so their score reflects their true game progress, then shows the game-over overlay.
+function endGameByForfeit() {
+  // Invalidate any in-flight scoring/bonus animations so they don't race with our game-over
+  gameGen++;
+  S.over = true;
+  S.endedByForfeit = true;
+  // Only connected players get final bonuses applied
+  for (const p of S.players) {
+    if (p.disconnected) continue;
+    applyFinalBonusesTo(p);
+  }
+  // Clear any in-flight UI state
+  sel = null;
+  undoState = null;
+  document.getElementById('undo-btn').style.display = 'none';
+  document.getElementById('round-summary').classList.remove('show');
+  document.getElementById('scoring-banner').classList.remove('show');
+  document.querySelectorAll('.points-pop, .tally-ticker, .line-complete, .chain-overlay, .fly-tile').forEach(el => el.remove());
+  clearFocus();
+  render();
+  showGameOver();
+}
+
+function applyFinalBonusesTo(p) {
+  for (let r = 0; r < 5; r++) if (p.wall[r].every(c => c)) p.score += 2;
+  for (let c = 0; c < 5; c++) if (p.wall.every(row => row[c])) p.score += 7;
+  for (const col of COLORS) {
+    let n = 0;
+    for (let r = 0; r < 5; r++) {
+      const c = WALL[r].indexOf(col);
+      if (p.wall[r][c]) n++;
+    }
+    if (n === 5) p.score += 10;
+  }
+}
+
 function endTurn() {
   const allEmpty = S.fac.every(f => !f.length) && !S.ctr.length;
   if (allEmpty) { endRound(); return; }
-  S.cur = (S.cur + 1) % CFG.np;
+  // In online mode, skip over any disconnected players
+  S.cur = Net.isOnline() ? nextActivePlayerIdx(S.cur) : (S.cur + 1) % CFG.np;
 
   // Status differs in online mode based on whose turn it is
   if (Net.isOnline()) {
@@ -2886,10 +3003,14 @@ async function endRound() {
 }
 
 async function animateFinalBonuses(details) {
+  const myGen = gameGen;
+  const stale = () => gameGen !== myGen;
   for (let pi = 0; pi < S.players.length; pi++) {
+    if (stale()) return;
     const p = S.players[pi];
     focusPlayer(pi);
     await wait(250);
+    if (stale()) return;
 
     // Rows: +2 each
     for (let r = 0; r < 5; r++) {
@@ -2903,6 +3024,7 @@ async function animateFinalBonuses(details) {
         if (scoringSpeed !== 'instant') Snd.SFX.scoreBig();
         popScore(pi);
         await wait(750);
+        if (stale()) return;
       }
     }
     // Columns: +7 each
@@ -2917,6 +3039,7 @@ async function animateFinalBonuses(details) {
         if (scoringSpeed !== 'instant') Snd.SFX.rowComplete();
         popScore(pi);
         await wait(850);
+        if (stale()) return;
       }
     }
     // Colors: +10 each
@@ -2939,6 +3062,7 @@ async function animateFinalBonuses(details) {
         if (scoringSpeed !== 'instant') Snd.SFX.victory();
         popScore(pi);
         await wait(950);
+        if (stale()) return;
       }
     }
     await wait(400);
@@ -2994,7 +3118,12 @@ function closeSummaryAndContinue() {
   document.getElementById('round-summary').classList.remove('show');
   S.round++;
   const fi = S.players.findIndex(p => p.first);
-  if (fi >= 0) { S.cur = fi; S.players[fi].first = false; }
+  if (fi >= 0) {
+    S.players[fi].first = false;
+    // If the first-token holder disconnected, skip to the next active player
+    // to avoid hanging the game waiting for a dropped player's turn.
+    S.cur = (Net.isOnline() && S.players[fi].disconnected) ? nextActivePlayerIdx(fi) : fi;
+  }
   fillFactories();
   S.phase = 'pick';
 
@@ -3016,17 +3145,8 @@ function closeSummaryAndContinue() {
   if (!Net.isOnline() && S.players[S.cur].isAI) scheduleAI(500);
 }
 
-function finalScore() {
-  for (const p of S.players) {
-    for (let r=0;r<5;r++) if(p.wall[r].every(c=>c)) p.score+=2;
-    for (let c=0;c<5;c++) if(p.wall.every(r=>r[c])) p.score+=7;
-    for (const col of COLORS) {
-      let n=0;
-      for (let r=0;r<5;r++) { const c=WALL[r].indexOf(col); if(p.wall[r][c]) n++; }
-      if (n===5) p.score+=10;
-    }
-  }
-}
+// Note: final bonuses are applied inside animateFinalBonuses() with animations.
+// The old finalScore() was removed as dead code.
 
 // ============ AI ENGINE ============
 function scheduleAI(ms) {
@@ -3327,7 +3447,7 @@ function renderBoards() {
     const isCur = pi === S.cur;
     const isMine = Net.isOnline() && pi === Net.getMyIdx();
     const board = document.createElement('div');
-    board.className = 'player-board' + (isCur ? ' active' : ' inactive');
+    board.className = 'player-board' + (isCur ? ' active' : ' inactive') + (p.disconnected ? ' disconnected' : '');
 
     // Header
     const hdr = document.createElement('div');
@@ -3337,7 +3457,7 @@ function renderBoards() {
     let nameLabel = p.name;
     if (p.isAI) nameLabel += ' <span style="font-size:11px;color:#888">(AI)</span>';
     if (isMine) nameLabel += ' <span style="font-size:10px;background:var(--gold);color:var(--ink);padding:1px 6px;border-radius:6px;letter-spacing:1px;margin-left:4px;">YOU</span>';
-    if (Net.isOnline() && p.disconnected) nameLabel += ' <span style="font-size:10px;color:#e94560;">(offline)</span>';
+    if (Net.isOnline() && p.disconnected) nameLabel += ' <span style="font-size:10px;background:var(--accent);color:#fff;padding:1px 6px;border-radius:6px;letter-spacing:1px;margin-left:4px;">OFFLINE</span>';
     nm.innerHTML = (isCur && !S.over ? '<span class="turn-dot"></span>' : '') + nameLabel;
     const sc = document.createElement('span');
     sc.className = 'player-score';
@@ -3479,19 +3599,36 @@ function setStatus(html) { document.getElementById('status').innerHTML = html; }
 function showGameOver() {
   Snd.SFX.victory();
   document.getElementById('overlay').classList.add('show');
-  const sorted = [...S.players].sort((a,b) => b.score - a.score);
-  document.getElementById('winner-text').textContent = `${sorted[0].name} Wins!`;
+
+  // Rank players: connected first (any disconnected player automatically forfeits the win),
+  // then by descending score as a tiebreaker within each group.
+  const sorted = [...S.players].sort((a, b) => {
+    const aDown = a.disconnected ? 1 : 0;
+    const bDown = b.disconnected ? 1 : 0;
+    if (aDown !== bDown) return aDown - bDown; // connected (0) ranks above disconnected (1)
+    return b.score - a.score;
+  });
+
+  const winner = sorted[0];
+  const byForfeit = !!S.endedByForfeit;
+  document.getElementById('winner-text').textContent = byForfeit
+    ? `${winner.name} Wins by Forfeit!`
+    : `${winner.name} Wins!`;
+
   const cont = document.getElementById('final-scores');
   cont.innerHTML = '';
   sorted.forEach((p, i) => {
     const row = document.createElement('div');
     row.className = 'score-row';
-    row.innerHTML = `<span>${i===0?'\u{1F451} ':''}${p.name}</span><span class="pts">${p.score} pts</span>`;
+    const crown = i === 0 ? '\u{1F451} ' : '';
+    const offlineTag = p.disconnected ? ' <span style="font-size:11px;color:var(--red-d);font-style:italic;">(disconnected)</span>' : '';
+    row.innerHTML = `<span>${crown}${p.name}${offlineTag}</span><span class="pts">${p.score} pts</span>`;
     cont.appendChild(row);
   });
-  // Bonus info
-  let info = 'Bonuses: Complete row +2 | Complete column +7 | All 5 of one color +10';
-  document.getElementById('bonus-info').textContent = info;
+
+  document.getElementById('bonus-info').textContent = byForfeit
+    ? 'Game ended early — connected players received their final bonuses.'
+    : 'Bonuses: Complete row +2 | Complete column +7 | All 5 of one color +10';
 }
 
 // ============ SETUP ============

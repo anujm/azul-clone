@@ -1242,6 +1242,186 @@
     .factory .t { width: 30px; height: 30px; }
   }
 
+  /* ===== MOBILE (phones / narrow tablets) ===== */
+  @media (max-width: 640px) {
+    /* Prevent iOS zoom on input focus */
+    input, button, select, textarea { font-size: 16px !important; }
+
+    /* Game container */
+    #game { padding: 12px 8px 16px; gap: 14px; }
+
+    /* Header */
+    #header { padding: 8px 8px 6px; }
+    #header h1 { font-size: 20px; letter-spacing: 6px; padding-left: 6px; }
+    #status-bar { margin-top: 2px; min-height: auto; padding: 0 8px; }
+    #status { font-size: 12px; line-height: 1.4; }
+    #status .step-num { width: 18px; height: 18px; font-size: 10px; margin-right: 4px; }
+    .header-btns { right: 6px; gap: 4px; }
+    .icon-btn { width: 30px; height: 30px; font-size: 14px; }
+    #undo-btn { padding: 3px 10px; font-size: 11px; }
+
+    /* Factories section */
+    #factories-section .section-label { font-size: 9px; letter-spacing: 3px; margin-bottom: 10px; }
+    #factories-area { gap: 10px; }
+    .factory { width: 88px; height: 88px; padding: 14px; gap: 3px; }
+    .factory .t { width: 26px; height: 26px; }
+    .factory::after { bottom: -18px; font-size: 9px; }
+    #center-pool { padding: 10px 12px; max-width: 280px; }
+    #center-pool::before { font-size: 9px; letter-spacing: 2px; top: -8px; }
+    #center-pool .t { width: 28px; height: 28px; }
+
+    /* Stack player boards vertically */
+    #boards { flex-direction: column; gap: 14px; width: 100%; }
+    .player-board {
+      min-width: 0 !important;
+      width: 100%;
+      padding: 10px 10px 8px;
+      box-shadow: 0 0 0 3px var(--wood), 0 0 0 5px var(--wood-d), 0 0 0 6px var(--gold-d), inset 0 0 20px rgba(139,90,43,.1), 0 4px 12px rgba(0,0,0,.35);
+    }
+    .player-board.active {
+      box-shadow: 0 0 0 3px var(--wood), 0 0 0 5px var(--wood-d), 0 0 0 6px var(--gold), inset 0 0 20px rgba(139,90,43,.1), 0 0 18px rgba(201,169,97,.3), 0 4px 12px rgba(0,0,0,.35);
+    }
+    .player-header { margin-bottom: 8px; padding-bottom: 6px; }
+    .player-name { font-size: 14px; letter-spacing: .5px; }
+    .player-score { font-size: 18px; padding: 2px 12px; min-width: 46px; }
+
+    /* Scale tiles down to fit a 375-400px viewport */
+    .t, .p-slot, .w-slot { width: 26px; height: 26px; font-size: 11px; }
+    .p-row { height: 26px; padding: 0 2px; gap: 2px; }
+    .pattern-lines { padding: 3px; gap: 2px; }
+    .wall { padding: 3px; gap: 2px; }
+    .wall-row { gap: 2px; }
+    .arrow-col { font-size: 11px; gap: 2px; }
+    .arrow-col span { height: 26px; width: 14px; }
+    .board-content { gap: 2px; }
+    .p-row.can-place::before { display: none; }
+
+    /* Floor line */
+    .floor-area { margin-top: 6px; padding-top: 6px; }
+    .floor-label { font-size: 9px; letter-spacing: 2px; }
+    .floor-click { font-size: 10px; }
+    .floor-slot { width: 26px; height: 26px; }
+    .floor-penalties span { width: 26px; font-size: 9px; }
+    .floor-line { gap: 2px; }
+    .floor-penalties { gap: 2px; }
+
+    /* Controls */
+    #controls { margin-top: 4px; }
+    .btn { padding: 8px 18px; font-size: 12px; letter-spacing: 1px; }
+    .btn-sm { padding: 5px 12px; font-size: 11px; }
+
+    /* Setup screen */
+    #setup { min-height: auto; gap: 18px; padding: 16px 12px 32px; }
+    #setup h2 { font-size: 34px; letter-spacing: 10px; padding-left: 10px; }
+    #setup .subtitle { font-size: 13px; margin-top: -10px; letter-spacing: 1px; }
+    .setup-cards { gap: 10px; width: 100%; max-width: 380px; }
+    .setup-card { min-width: 0; padding: 14px 12px; flex: 1; }
+    .setup-card .num { font-size: 20px; }
+    .setup-card .desc { font-size: 10px; }
+    .setup-row label { font-size: 10px; letter-spacing: 2px; }
+
+    /* Online setup */
+    #online-setup { gap: 10px; width: 100%; padding: 0 12px; }
+    .online-input { width: 100% !important; max-width: 280px; padding: 10px 14px; }
+    .or-divider { width: 180px; }
+    .or-divider span { font-size: 9px; letter-spacing: 2px; }
+
+    /* Lobby */
+    #lobby { min-height: auto; gap: 14px; padding: 16px 12px 32px; }
+    #lobby h2 { font-size: 24px; letter-spacing: 5px; }
+    .lobby-card { min-width: 0; width: 100%; max-width: 400px; padding: 16px 18px; }
+    .lobby-row { margin-bottom: 10px; }
+    .lobby-code { font-size: 20px; letter-spacing: 4px; padding: 3px 10px; }
+    .lobby-player { padding: 6px 10px; font-size: 12px; }
+    .lobby-player .lp-badge { font-size: 9px; padding: 1px 6px; }
+
+    /* Audio menu — fit on screen */
+    #audio-menu { right: 6px; top: 48px; width: 240px; padding: 12px 14px; max-width: calc(100vw - 12px); }
+    #audio-menu .am-row { font-size: 12px; margin-bottom: 6px; }
+    #audio-menu input[type=range] { width: 110px; }
+    #audio-menu .am-track { padding: 5px 8px; font-size: 11px; }
+    #audio-menu .am-track .am-composer { font-size: 9px; }
+    .am-speed-btn { padding: 4px 6px; font-size: 10px; }
+
+    /* Modals — full-width */
+    #overlay-content { padding: 24px 20px; max-width: calc(100vw - 32px); width: 100%; }
+    #overlay-content h2 { font-size: 22px; letter-spacing: 2px; }
+    #overlay-content .score-row { gap: 20px; font-size: 13px; padding: 6px 10px; }
+    #overlay-content .bonus-details { font-size: 11px; }
+
+    .summary-card { padding: 20px 18px; max-width: calc(100vw - 32px); }
+    .summary-card h3 { font-size: 18px; letter-spacing: 2px; margin-bottom: 12px; }
+    .summary-p { padding: 7px 12px; font-size: 12px; flex-wrap: wrap; gap: 6px; }
+    .summary-p .sp-change { font-size: 11px; flex: 1 1 100%; order: 3; }
+    .summary-p .sp-score { font-size: 18px; }
+
+    /* Tutorial — full-width */
+    .tut-card { padding: 20px 16px 16px; max-width: calc(100vw - 16px); width: 100%; }
+    .tut-card h3 { font-size: 16px; letter-spacing: 1px; margin-bottom: 10px; }
+    .tut-card h3 .tut-step { width: 24px; height: 24px; font-size: 12px; }
+    .tut-card p { font-size: 13px; line-height: 1.55; margin-bottom: 10px; }
+    .tut-card ul { padding-left: 18px; }
+    .tut-card ul li { font-size: 12px; margin-bottom: 4px; }
+    .tut-card .tut-visual { padding: 12px 8px; gap: 8px; margin: 10px 0; }
+    .tut-tile-grid { grid-template-columns: repeat(5, 1fr); gap: 4px; }
+    .tut-tile-card { padding: 6px 2px; gap: 2px; }
+    .tut-tile-card .t { width: 28px; height: 28px; }
+    .tut-tile-card .tt-name { font-size: 9px; letter-spacing: 0; }
+    .tut-flow { padding: 8px; gap: 4px; }
+    .tut-flow-step { min-width: 70px; padding: 6px 8px; }
+    .tut-flow-step .fs-num { width: 20px; height: 20px; font-size: 10px; }
+    .tut-flow-step .fs-label { font-size: 10px; letter-spacing: 0; }
+    .tut-factory { width: 80px; height: 80px; padding: 14px; }
+    .tut-factory .t { width: 22px; height: 22px; }
+    .tut-pattern-rows .t, .tut-pattern-rows .tpr-slot { width: 24px; height: 24px; }
+    .tut-compare { grid-template-columns: 1fr 1fr; gap: 6px; }
+    .tut-compare .ex-panel { padding: 8px; }
+    .tut-compare .ex-label { font-size: 10px; letter-spacing: 1px; }
+    .tut-compare .ex-desc { font-size: 10px; }
+    .tut-scoring-ex { padding: 8px; gap: 8px; }
+    .tut-mini-wall { padding: 4px; }
+    .tut-mini-wall .tmw-slot, .tut-mini-wall .t { width: 20px !important; height: 20px !important; }
+    .tut-score-calc { font-size: 11px; padding: 4px 8px; }
+    .tut-score-calc .total { font-size: 14px; }
+    .tut-bonus-row { padding: 6px 10px; font-size: 12px; }
+
+    /* Controls page (tutorial) - mini elements */
+    .num-badge { width: 22px; height: 22px; font-size: 11px; }
+    .tut-steps li { grid-template-columns: 22px 1fr; gap: 8px; }
+
+    /* Floating overlays during scoring */
+    .points-pop { font-size: 22px; }
+    .tally-ticker { font-size: 11px; padding: 2px 8px; }
+    .line-complete { font-size: 11px; padding: 3px 10px; letter-spacing: 2px; }
+    #scoring-banner { font-size: 16px; letter-spacing: 3px; padding: 14px 24px; max-width: calc(100vw - 40px); }
+    #scoring-banner .banner-sub { font-size: 10px; letter-spacing: 1px; }
+  }
+
+  /* Extra tight (very small phones, e.g. 320px) */
+  @media (max-width: 360px) {
+    .factory { width: 78px; height: 78px; padding: 12px; }
+    .factory .t { width: 22px; height: 22px; }
+    .t, .p-slot, .w-slot { width: 26px; height: 26px; }
+    .p-row { height: 26px; }
+    .arrow-col span { height: 26px; }
+    .floor-slot { width: 24px; height: 24px; }
+    .floor-penalties span { width: 24px; }
+    #setup h2 { font-size: 28px; letter-spacing: 8px; }
+    #header h1 { font-size: 18px; letter-spacing: 4px; }
+  }
+
+  /* Touch-friendly interactions */
+  @media (hover: none) and (pointer: coarse) {
+    /* Disable hover effects that don't work well on touch */
+    .t:hover { transform: none; box-shadow: inset 0 1px 0 rgba(255,255,255,.3), inset 0 -2px 2px rgba(0,0,0,.25), 0 2px 3px rgba(0,0,0,.35); }
+    .factory:hover { transform: none; }
+    .btn:active, .icon-btn:active { opacity: .7; }
+    /* Remove 300ms tap delay */
+    * { touch-action: manipulation; }
+    /* Ensure clickable tiles have good tap-target size feel */
+    .factory .t, #center-pool .t { cursor: pointer; }
+  }
+
   /* ===== GAME WRAPPER ===== */
   #game { display: flex; flex-direction: column; align-items: center; padding: 24px 20px 20px; gap: 26px; }
 </style>

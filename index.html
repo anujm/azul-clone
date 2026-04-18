@@ -801,12 +801,23 @@
     min-width: 140px;
     box-shadow: inset 0 1px 0 rgba(201,169,97,.2), 0 3px 8px rgba(0,0,0,.3);
   }
-  .setup-card:hover { border-color: var(--gold); transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,.4); }
+  /* Hover: subtle lift, NO border color change so it can't be mistaken for selected */
+  .setup-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.4); }
+  /* Selected: clearly distinct — brighter gold fill, thick bright border, ring glow, and a gold check indicator */
   .setup-card.sel {
     border-color: var(--gold);
-    background: linear-gradient(180deg, rgba(201,169,97,.25), rgba(201,169,97,.1));
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 0 20px rgba(201,169,97,.3);
+    border-width: 3px;
+    padding: 19px 27px; /* compensate border width so layout doesn't shift */
+    background: linear-gradient(180deg, rgba(255,233,168,.35), rgba(201,169,97,.2));
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.3),
+      inset 0 0 0 1px rgba(255,233,168,.4),
+      0 0 0 4px rgba(201,169,97,.15),
+      0 0 24px rgba(201,169,97,.55),
+      0 4px 12px rgba(0,0,0,.4);
+    position: relative;
   }
+  .setup-card.sel .num { color: #ffe9a8; text-shadow: 0 0 12px rgba(255,233,168,.5); }
   .setup-card .num { font-family: 'Cinzel', serif; font-size: 26px; font-weight: 900; color: var(--gold); }
   .setup-card .desc { font-size: 12px; color: #b0a07a; margin-top: 4px; font-style: italic; }
   .setup-row { display: flex; flex-direction: column; align-items: center; gap: 10px; }
@@ -1319,10 +1330,15 @@
     #setup { min-height: auto; gap: 18px; padding: 16px 12px 32px; }
     #setup h2 { font-size: 34px; letter-spacing: 10px; padding-left: 10px; }
     #setup .subtitle { font-size: 13px; margin-top: -10px; letter-spacing: 1px; }
-    .setup-cards { gap: 10px; width: 100%; max-width: 380px; }
-    .setup-card { min-width: 0; padding: 14px 12px; flex: 1; }
-    .setup-card .num { font-size: 20px; }
-    .setup-card .desc { font-size: 10px; }
+    /* Make setup rows stretch to full viewport width so their card groups can expand.
+       Parent #setup uses align-items:center which otherwise shrinks rows to content width. */
+    .setup-row { width: 100%; align-self: stretch; }
+    .setup-cards { gap: 8px; width: 100%; max-width: 380px; margin: 0 auto; }
+    .setup-card { min-width: 0; padding: 14px 8px; flex: 1; overflow: hidden; }
+    /* Selected-card padding must account for the thicker (3px) border so layout doesn't shift. */
+    .setup-card.sel { padding: 13px 7px; }
+    .setup-card .num { font-size: 18px; letter-spacing: 0; }
+    .setup-card .desc { font-size: 10px; letter-spacing: 0; }
     .setup-row label { font-size: 10px; letter-spacing: 2px; }
 
     /* Online setup */
@@ -1545,6 +1561,9 @@
         <div style="display:flex; gap:6px;">
           <input id="lobby-share-url" readonly class="online-input" style="flex:1; font-size:11px;">
           <button class="btn btn-ghost btn-sm" onclick="copyShareUrl()">Copy</button>
+        </div>
+        <div style="font-size:10px; color:var(--wood); font-style:italic; line-height:1.4;">
+          Tip: friends must open this same URL (or the share link above) to join.
         </div>
       </div>
       <div class="lobby-divider"></div>
@@ -1985,6 +2004,9 @@ const Net = (() => {
     return new Promise((resolve, reject) => {
       if (typeof Peer === 'undefined') return reject(new Error('PeerJS not loaded. Check your internet connection.'));
       if (retryCount > 5) return reject(new Error('Could not allocate a room code. Please try again.'));
+      // Clean up any zombie peer from a previous attempt
+      if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
+      conns = [];
       mode = 'host';
       myIdx = 0;
       players = [{ name: name || 'Host', idx: 0 }];
@@ -2023,35 +2045,110 @@ const Net = (() => {
   function join(code, name) {
     return new Promise((resolve, reject) => {
       if (typeof Peer === 'undefined') return reject(new Error('PeerJS not loaded.'));
+      // Clean up any zombie peer from a previous failed attempt
+      if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
+      conns = [];
       mode = 'client';
       const peerId = ROOM_PREFIX + code.toUpperCase();
       try { peer = new Peer({ debug: 0 }); }
       catch (e) { return reject(e); }
 
-      const timeout = setTimeout(() => reject(new Error('Could not connect. Check the code and try again.')), 12000);
+      // Overall timeout for the whole join sequence
+      const overallTimeout = setTimeout(() => {
+        done(new Error('Timed out connecting to the room. The host may have closed the tab, or the PeerJS broker is slow. Try again.'));
+      }, 20000);
 
-      peer.on('open', () => {
+      let settled = false;
+      const done = (err) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(overallTimeout);
+        if (err) reject(err); else resolve();
+      };
+
+      // Treat 'peer-unavailable' as potentially transient - the host may have JUST
+      // registered and the broker hasn't propagated yet. Retry a few times.
+      let attempt = 0;
+      const maxAttempts = 4;
+      let sawPeerUnavailable = false; // track across retries so final message is informative
+
+      const tryConnect = () => {
+        attempt++;
+        updateJoinStatus(attempt, maxAttempts);
         const conn = peer.connect(peerId, { reliable: true });
+
+        let connResolved = false;
+        const connTimeout = setTimeout(() => {
+          if (connResolved) return;
+          connResolved = true;
+          handleAttemptFailure('timeout');
+        }, 5000);
+
         conn.on('open', () => {
-          clearTimeout(timeout);
+          if (connResolved) return;
+          connResolved = true;
+          clearTimeout(connTimeout);
           conns = [conn];
           conn.send({ t: 'join', name: name || 'Guest' });
           conn.on('data', data => handleClientMsg(data));
           conn.on('close', () => onHostDisconnect());
           conn.on('error', () => onHostDisconnect());
-          resolve();
+          done();
         });
+
         conn.on('error', err => {
-          clearTimeout(timeout);
-          reject(new Error('Room not found.'));
+          if (connResolved) return;
+          connResolved = true;
+          clearTimeout(connTimeout);
+          if (err && err.type === 'peer-unavailable') sawPeerUnavailable = true;
+          handleAttemptFailure(err && err.type);
         });
+      };
+
+      const handleAttemptFailure = (reason) => {
+        if (settled) return;
+        if (reason === 'peer-unavailable') sawPeerUnavailable = true;
+        if (attempt < maxAttempts) {
+          // Retry with increasing backoff - gives the broker time to propagate
+          const delay = 600 * attempt;
+          setTimeout(tryConnect, delay);
+        } else {
+          // Prefer the most informative error message
+          const hint = sawPeerUnavailable
+            ? `Room "${code.toUpperCase()}" not found. Verify the code and that the host is still in the lobby.\n\n(If you and the host opened different URLs, that will also cause this. Both players must use the exact same page.)`
+            : `Could not reach the host after ${maxAttempts} attempts. The PeerJS broker may be slow - please try again.`;
+          done(new Error(hint));
+        }
+      };
+
+      peer.on('open', () => {
+        tryConnect();
       });
       peer.on('error', err => {
-        clearTimeout(timeout);
-        const msg = err.type === 'peer-unavailable' ? 'Room not found.' : (err.message || 'Connection failed.');
-        reject(new Error(msg));
+        // peer-level errors (not conn-level). Only fail outright for unrecoverable ones.
+        if (err && err.type === 'peer-unavailable') {
+          // The target peer is unknown to the broker right now. This arrives as a peer error,
+          // not a conn error, when the broker can't find the ID. Treat it like a soft failure
+          // and let the retry loop handle it.
+          handleAttemptFailure('peer-unavailable');
+        } else if (err && err.type === 'network') {
+          done(new Error('Network error reaching the PeerJS broker. Check your internet connection.'));
+        } else if (err && err.type === 'server-error') {
+          done(new Error('PeerJS broker returned an error. Please try again in a moment.'));
+        } else {
+          // For other errors, still try once more; otherwise give up
+          if (attempt === 0) return; // peer.on('open') will start the first attempt
+          handleAttemptFailure(err && err.type);
+        }
       });
     });
+  }
+
+  function updateJoinStatus(attempt, max) {
+    const el = document.getElementById('online-status');
+    if (!el) return;
+    el.style.color = '#b0a07a';
+    el.textContent = attempt === 1 ? 'Connecting…' : `Retrying (${attempt}/${max})…`;
   }
 
   function onPeerDisconnect(conn) {
@@ -3596,39 +3693,77 @@ function renderBoards() {
 
 function setStatus(html) { document.getElementById('status').innerHTML = html; }
 
+// Count how many horizontal rows a player has fully completed on their wall.
+// Used as the official Azul tiebreaker (rulebook: "if tied, the player with the most
+// complete horizontal rows wins; if still tied, share the victory").
+function completedRowsCount(p) {
+  let n = 0;
+  for (let r = 0; r < 5; r++) if (p.wall[r].every(c => c)) n++;
+  return n;
+}
+
 function showGameOver() {
   Snd.SFX.victory();
   document.getElementById('overlay').classList.add('show');
 
-  // Rank players: connected first (any disconnected player automatically forfeits the win),
-  // then by descending score as a tiebreaker within each group.
+  // Rank players: connected first (disconnected players forfeit the win), then by
+  // descending score, then by descending completed-rows count (Azul tiebreaker).
   const sorted = [...S.players].sort((a, b) => {
     const aDown = a.disconnected ? 1 : 0;
     const bDown = b.disconnected ? 1 : 0;
-    if (aDown !== bDown) return aDown - bDown; // connected (0) ranks above disconnected (1)
-    return b.score - a.score;
+    if (aDown !== bDown) return aDown - bDown;
+    if (b.score !== a.score) return b.score - a.score;
+    return completedRowsCount(b) - completedRowsCount(a);
   });
 
-  const winner = sorted[0];
   const byForfeit = !!S.endedByForfeit;
-  document.getElementById('winner-text').textContent = byForfeit
-    ? `${winner.name} Wins by Forfeit!`
-    : `${winner.name} Wins!`;
+
+  // Determine all top-ranked players that are tied with the leader on every criterion
+  // we use for ranking. If multiple players share the top spot, it's a true tie.
+  const top = sorted[0];
+  const winners = sorted.filter(p =>
+    !!p.disconnected === !!top.disconnected &&
+    p.score === top.score &&
+    completedRowsCount(p) === completedRowsCount(top)
+  );
+  const isTie = winners.length > 1;
+
+  const winnerEl = document.getElementById('winner-text');
+  if (byForfeit) {
+    // Forfeit: only one player can be standing as connected leader by construction.
+    winnerEl.textContent = `${top.name} Wins by Forfeit!`;
+  } else if (isTie) {
+    if (winners.length === S.players.length) {
+      winnerEl.textContent = `It's a Tie!`;
+    } else {
+      const names = winners.map(w => w.name).join(' & ');
+      winnerEl.textContent = `Tie: ${names}!`;
+    }
+  } else {
+    winnerEl.textContent = `${top.name} Wins!`;
+  }
 
   const cont = document.getElementById('final-scores');
   cont.innerHTML = '';
-  sorted.forEach((p, i) => {
+  sorted.forEach(p => {
     const row = document.createElement('div');
     row.className = 'score-row';
-    const crown = i === 0 ? '\u{1F451} ' : '';
+    const tied = winners.includes(p) && !p.disconnected;
+    const crown = tied ? '\u{1F451} ' : '';
     const offlineTag = p.disconnected ? ' <span style="font-size:11px;color:var(--red-d);font-style:italic;">(disconnected)</span>' : '';
     row.innerHTML = `<span>${crown}${p.name}${offlineTag}</span><span class="pts">${p.score} pts</span>`;
     cont.appendChild(row);
   });
 
-  document.getElementById('bonus-info').textContent = byForfeit
-    ? 'Game ended early — connected players received their final bonuses.'
-    : 'Bonuses: Complete row +2 | Complete column +7 | All 5 of one color +10';
+  let info;
+  if (byForfeit) {
+    info = 'Game ended early. Connected players received their final bonuses.';
+  } else if (isTie) {
+    info = 'Tied on score and completed rows. The victory is shared.';
+  } else {
+    info = 'Bonuses: Complete row +2 | Complete column +7 | All 5 of one color +10';
+  }
+  document.getElementById('bonus-info').textContent = info;
 }
 
 // ============ SETUP ============

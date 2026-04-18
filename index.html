@@ -794,20 +794,20 @@
       radial-gradient(ellipse at 30% 20%, rgba(201,169,97,.15), transparent);
     border: 2px solid var(--gold-d);
     border-radius: 10px;
-    padding: 20px 28px;
+    padding: 20px 20px;
     cursor: pointer;
     transition: .2s;
     text-align: center;
-    min-width: 140px;
+    min-width: 170px;
     box-shadow: inset 0 1px 0 rgba(201,169,97,.2), 0 3px 8px rgba(0,0,0,.3);
   }
   /* Hover: subtle lift, NO border color change so it can't be mistaken for selected */
   .setup-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.4); }
-  /* Selected: clearly distinct — brighter gold fill, thick bright border, ring glow, and a gold check indicator */
+  /* Selected: brighter gold fill, thick bright border, ring glow */
   .setup-card.sel {
     border-color: var(--gold);
     border-width: 3px;
-    padding: 19px 27px; /* compensate border width so layout doesn't shift */
+    padding: 19px 19px; /* compensate border width so layout doesn't shift */
     background: linear-gradient(180deg, rgba(255,233,168,.35), rgba(201,169,97,.2));
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,.3),
@@ -818,8 +818,8 @@
     position: relative;
   }
   .setup-card.sel .num { color: #ffe9a8; text-shadow: 0 0 12px rgba(255,233,168,.5); }
-  .setup-card .num { font-family: 'Cinzel', serif; font-size: 26px; font-weight: 900; color: var(--gold); }
-  .setup-card .desc { font-size: 12px; color: #b0a07a; margin-top: 4px; font-style: italic; }
+  .setup-card .num { font-family: 'Cinzel', serif; font-size: 24px; font-weight: 900; color: var(--gold); letter-spacing: 0; line-height: 1.1; }
+  .setup-card .desc { font-size: 12px; color: #b0a07a; margin-top: 6px; font-style: italic; }
   .setup-row { display: flex; flex-direction: column; align-items: center; gap: 10px; }
   .setup-row label { font-family: 'Cinzel', serif; font-size: 11px; text-transform: uppercase; letter-spacing: 4px; color: var(--gold); opacity: .8; }
 
@@ -1544,7 +1544,9 @@
         <input id="join-code" class="online-input" maxlength="6" placeholder="ROOM CODE" style="text-transform:uppercase; letter-spacing:3px; text-align:center; width:170px;">
         <button class="btn btn-primary" onclick="joinExistingGame()">Join</button>
       </div>
-      <div id="online-status" style="font-size:12px; color:#b0a07a; min-height:18px; font-style:italic;"></div>
+      <div id="online-status" style="font-size:12px; color:#b0a07a; min-height:18px; font-style:italic; white-space:pre-line; text-align:center; max-width:340px;"></div>
+      <button class="btn btn-ghost btn-sm" onclick="runNetworkDiagnostic()" style="margin-top:4px;">Test Connection</button>
+      <div id="diag-result" style="font-size:11px; color:#b0a07a; min-height:14px; max-width:340px; text-align:center; white-space:pre-line; font-family:monospace;"></div>
     </div>
   </div>
 
@@ -1571,6 +1573,9 @@
       <div id="lobby-players"></div>
       <div id="lobby-host-controls" style="margin-top:14px; display:none;">
         <button id="lobby-start-btn" class="btn btn-primary" onclick="startOnlineGame()" disabled>Start Game</button>
+        <div style="font-size:10px; color:var(--accent); font-style:italic; margin-top:8px; line-height:1.4;">
+          Heads up: keep this browser tab active and the screen on - mobile browsers drop connections when backgrounded.
+        </div>
       </div>
       <div id="lobby-client-msg" style="margin-top:14px; font-style:italic; color:var(--wood); display:none;">Waiting for host to start the game…</div>
     </div>
@@ -1992,19 +1997,54 @@ const Net = (() => {
   const hostSlug = (location.hostname || 'local').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'local';
   const ROOM_PREFIX = 'azul-clone-' + hostSlug + '-';
 
-  // WebRTC ICE servers: STUN for NAT discovery + free public TURN relays for when
-  // direct P2P fails (common on mobile carriers / CGNAT / corporate firewalls).
-  // Without these, two devices behind symmetric NATs cannot connect at all.
-  const ICE_SERVERS = [
+  // ===== ICE servers =====
+  // Primary: Metered.ca (private credentials, fetched fresh each session via their REST API)
+  // Fallback: Google STUN + public Open Relay TURN (used if the Metered API is unreachable)
+  const METERED_API_KEY = 'a626e2474d76dedd6dec3be1efc492511b8f';
+  const METERED_API_URL = `https://amgame.metered.live/api/v1/turn/credentials?apiKey=${METERED_API_KEY}`;
+
+  const FALLBACK_ICE_SERVERS = [
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
     { urls: 'stun:stun.cloudflare.com:3478' },
-    // Open Relay by Metered - free public TURN (no signup, rate-limited but generous)
     { urls: 'turn:openrelay.metered.ca:80',  username: 'openrelayproject', credential: 'openrelayproject' },
     { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
     { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
   ];
-  const PEER_OPTS = { debug: 0, config: { iceServers: ICE_SERVERS } };
+
+  // Cache of the resolved ICE servers for this session (credentials usually last hours)
+  let _cachedIceServers = null;
+  let _iceFetchPromise = null;
+  async function getIceServers() {
+    if (_cachedIceServers) return _cachedIceServers;
+    if (_iceFetchPromise) return _iceFetchPromise;
+    _iceFetchPromise = (async () => {
+      try {
+        const res = await fetch(METERED_API_URL, { method: 'GET' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const servers = await res.json();
+        if (!Array.isArray(servers) || servers.length === 0) throw new Error('empty response');
+        // Prepend a Google STUN server for fastest NAT discovery, then all the Metered ones
+        _cachedIceServers = [{ urls: 'stun:stun.l.google.com:19302' }, ...servers];
+        return _cachedIceServers;
+      } catch (e) {
+        console.warn('Metered TURN fetch failed, using fallback:', e);
+        _cachedIceServers = FALLBACK_ICE_SERVERS;
+        return _cachedIceServers;
+      } finally {
+        _iceFetchPromise = null;
+      }
+    })();
+    return _iceFetchPromise;
+  }
+
+  // Pre-warm the ICE server cache on module load so the first host/join is instant
+  getIceServers();
+
+  async function buildPeerOpts() {
+    const iceServers = await getIceServers();
+    return { debug: 0, config: { iceServers, iceTransportPolicy: 'all' } };
+  }
 
   function setStatus(msg, isError) {
     const el = document.getElementById('online-status');
@@ -2014,10 +2054,12 @@ const Net = (() => {
     }
   }
 
-  function host(name, retryCount = 0) {
+  async function host(name, retryCount = 0) {
+    if (typeof Peer === 'undefined') throw new Error('PeerJS not loaded. Check your internet connection.');
+    if (retryCount > 5) throw new Error('Could not allocate a room code. Please try again.');
+    // Fetch ICE servers before creating the peer so the RTCPeerConnection has them immediately
+    const peerOpts = await buildPeerOpts();
     return new Promise((resolve, reject) => {
-      if (typeof Peer === 'undefined') return reject(new Error('PeerJS not loaded. Check your internet connection.'));
-      if (retryCount > 5) return reject(new Error('Could not allocate a room code. Please try again.'));
       // Clean up any zombie peer from a previous attempt
       if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
       conns = [];
@@ -2026,7 +2068,7 @@ const Net = (() => {
       players = [{ name: name || 'Host', idx: 0 }];
       roomCode = shortCode();
       const peerId = ROOM_PREFIX + roomCode;
-      try { peer = new Peer(peerId, PEER_OPTS); }
+      try { peer = new Peer(peerId, peerOpts); }
       catch (e) { return reject(e); }
 
       const timeout = setTimeout(() => reject(new Error('Connection timed out. Retry?')), 12000);
@@ -2056,15 +2098,16 @@ const Net = (() => {
     });
   }
 
-  function join(code, name) {
+  async function join(code, name) {
+    if (typeof Peer === 'undefined') throw new Error('PeerJS not loaded.');
+    const peerOpts = await buildPeerOpts();
     return new Promise((resolve, reject) => {
-      if (typeof Peer === 'undefined') return reject(new Error('PeerJS not loaded.'));
       // Clean up any zombie peer from a previous failed attempt
       if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
       conns = [];
       mode = 'client';
       const peerId = ROOM_PREFIX + code.toUpperCase();
-      try { peer = new Peer(PEER_OPTS); }
+      try { peer = new Peer(peerOpts); }
       catch (e) { return reject(e); }
 
       // Overall timeout for the whole join sequence
@@ -2366,6 +2409,7 @@ const Net = (() => {
   return {
     host, join, leave, sendAction, isOnline, isHost, isMyTurn, getMyIdx, getPlayers,
     hostStart, broadcastNewRound, setOnlineNotice, getMode, getRoomCode, broadcast,
+    getIceServers, // exposed for the diagnostic button
   };
 })();
 
@@ -2488,6 +2532,94 @@ function startOnlineGame() {
   }
   render();
 }
+
+// Diagnostic: try to reach the PeerJS broker and a TURN server, report which layer fails.
+async function runNetworkDiagnostic() {
+  const result = document.getElementById('diag-result');
+  const steps = [];
+
+  const render = () => {
+    result.textContent = steps.map(s => `${s.icon} ${s.label}`).join('\n');
+  };
+  const step = (label) => {
+    const s = { icon: '\u23f3', label };
+    steps.push(s);
+    render();
+    return {
+      ok: () => { s.icon = '\u2713'; render(); },
+      fail: (msg) => { s.icon = '\u2717'; s.label = label + (msg ? ': ' + msg : ''); render(); },
+    };
+  };
+
+  result.style.color = '#b0a07a';
+  steps.length = 0;
+
+  // Test 1: PeerJS broker reachable
+  const brokerStep = step('PeerJS broker');
+  const brokerOk = await new Promise((resolve) => {
+    if (typeof Peer === 'undefined') { brokerStep.fail('library not loaded'); return resolve(false); }
+    const p = new Peer({ debug: 0 });
+    const to = setTimeout(() => { try { p.destroy(); } catch(e){}; brokerStep.fail('no response in 10s'); resolve(false); }, 10000);
+    p.on('open', () => { clearTimeout(to); try { p.destroy(); } catch(e){}; brokerStep.ok(); resolve(true); });
+    p.on('error', e => { clearTimeout(to); try { p.destroy(); } catch(e){}; brokerStep.fail(e && e.type || 'error'); resolve(false); });
+  });
+  if (!brokerOk) { result.style.color = '#e94560'; return; }
+
+  // Test 2: STUN reachable (NAT discovery)
+  const stunStep = step('STUN (NAT discovery)');
+  // Test 3: TURN reachable (relay for mobile NAT traversal)
+  const turnStep = step('TURN (relay fallback)');
+
+  const servers = await Net.getIceServers();
+  const iceResult = await new Promise((resolve) => {
+    try {
+      const pc = new RTCPeerConnection({ iceServers: servers });
+      let gotSrflx = false, gotRelay = false;
+      const to = setTimeout(() => {
+        pc.close();
+        if (gotSrflx) stunStep.ok(); else stunStep.fail('no server-reflexive');
+        if (gotRelay) turnStep.ok(); else turnStep.fail('no relay candidates');
+        resolve({ stun: gotSrflx, turn: gotRelay });
+      }, 15000);
+      pc.onicecandidate = (e) => {
+        if (!e.candidate) return;
+        const t = e.candidate.type;
+        if (t === 'srflx' && !gotSrflx) { gotSrflx = true; stunStep.ok(); }
+        if (t === 'relay' && !gotRelay) { gotRelay = true; turnStep.ok(); }
+        if (gotSrflx && gotRelay) { clearTimeout(to); pc.close(); resolve({ stun: true, turn: true }); }
+      };
+      pc.createDataChannel('test');
+      pc.createOffer().then(o => pc.setLocalDescription(o));
+    } catch (e) { stunStep.fail(e.message); turnStep.fail('skipped'); resolve({ stun: false, turn: false }); }
+  });
+
+  if (brokerOk && iceResult.stun && iceResult.turn) {
+    result.style.color = '#7dbc7d';
+    steps.push({ icon: '\u2713', label: 'All checks passed. Multiplayer should work.' });
+  } else if (brokerOk && iceResult.stun && !iceResult.turn) {
+    result.style.color = '#eab308';
+    steps.push({ icon: '!', label: 'TURN relay is unreachable.\nConnection will likely FAIL between mobile phones on different networks.\nWorks if both devices are on the same WiFi.' });
+  } else if (!brokerOk) {
+    steps.push({ icon: '!', label: 'Signaling broker is down. Try again in a few minutes.' });
+    result.style.color = '#e94560';
+  } else {
+    result.style.color = '#e94560';
+  }
+  render();
+}
+
+// Detect if the host's tab is suspended (mobile browsers aggressively freeze background tabs).
+// If the host backgrounds their tab, connections break; warn them.
+let _hostVisibilityWarnShown = false;
+document.addEventListener('visibilitychange', () => {
+  if (!Net.isOnline() || !Net.isHost()) return;
+  if (document.hidden) {
+    _hostVisibilityWarnShown = true;
+  } else if (_hostVisibilityWarnShown) {
+    // Tab came back to foreground; show a warning that connections may have dropped
+    setStatus('<span class="step-num">!</span> Tab was hidden - connections may have been dropped by the browser. Refresh if players can\'t interact.');
+  }
+});
 
 function leaveLobby() {
   Net.leave();

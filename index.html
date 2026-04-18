@@ -1992,6 +1992,20 @@ const Net = (() => {
   const hostSlug = (location.hostname || 'local').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'local';
   const ROOM_PREFIX = 'azul-clone-' + hostSlug + '-';
 
+  // WebRTC ICE servers: STUN for NAT discovery + free public TURN relays for when
+  // direct P2P fails (common on mobile carriers / CGNAT / corporate firewalls).
+  // Without these, two devices behind symmetric NATs cannot connect at all.
+  const ICE_SERVERS = [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: 'stun:stun.cloudflare.com:3478' },
+    // Open Relay by Metered - free public TURN (no signup, rate-limited but generous)
+    { urls: 'turn:openrelay.metered.ca:80',  username: 'openrelayproject', credential: 'openrelayproject' },
+    { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+    { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
+  ];
+  const PEER_OPTS = { debug: 0, config: { iceServers: ICE_SERVERS } };
+
   function setStatus(msg, isError) {
     const el = document.getElementById('online-status');
     if (el) {
@@ -2012,7 +2026,7 @@ const Net = (() => {
       players = [{ name: name || 'Host', idx: 0 }];
       roomCode = shortCode();
       const peerId = ROOM_PREFIX + roomCode;
-      try { peer = new Peer(peerId, { debug: 0 }); }
+      try { peer = new Peer(peerId, PEER_OPTS); }
       catch (e) { return reject(e); }
 
       const timeout = setTimeout(() => reject(new Error('Connection timed out. Retry?')), 12000);
@@ -2050,7 +2064,7 @@ const Net = (() => {
       conns = [];
       mode = 'client';
       const peerId = ROOM_PREFIX + code.toUpperCase();
-      try { peer = new Peer({ debug: 0 }); }
+      try { peer = new Peer(PEER_OPTS); }
       catch (e) { return reject(e); }
 
       // Overall timeout for the whole join sequence

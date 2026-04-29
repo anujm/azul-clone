@@ -4386,31 +4386,172 @@ function pickExpert(moves) {
   return best;
 }
 
-// ========== IMPOSSIBLE: Deep recursive minimax (full root breadth, alpha-beta-style adversarial pruning) ==========
-// Note: TRUE perfect play in Azul is intractable (the game tree is enormous, branching factor ~20–60
-// per ply across many rounds). This is the deepest practical search:
-//   - 2P: 4 plies (me → opp → me → opp), full root breadth, top-K pruning deeper down.
-//   - 3–4P: 3 plies (me → opp → opp[/opp]), same pruning shape.
-// Opponents are modeled adversarially (they pick the move that minimizes our net advantage).
+// ========== IMPOSSIBLE: Iterative-deepening paranoid alpha-beta with supply-aware eval ==========
+// Note: TRUE perfect play in Azul is intractable (huge branching factor, stochastic bag refills).
+// This is the strongest search the page can run in real time. Improvements over Expert:
+//   • Iterative deepening (2 → 3 → 4 → 5+) bounded by a 1.5s time budget.
+//   • Paranoid alpha-beta pruning (sound for our scalar `myEval − Σ oppEval·w`).
+//   • Move ordering at every level — we sort moves by a quick eval first so α-β cuts fire early.
+//   • Tile-supply-aware leaf eval: depleted colors stop earning bonus credit.
+//   • Adversaries take the worst-for-us move (as opposed to medium's "average opp").
+
+// Total tiles of each color in the game (Azul box: 20 of each color).
+const _COLOR_TOTAL = 20;
+
+// Count tiles of each color already placed on any wall (out of circulation).
+function _placedSupply(state) {
+  const placed = { blue:0, yellow:0, red:0, black:0, cyan:0 };
+  for (const p of state.players) {
+    for (let r = 0; r < 5; r++) {
+      for (let c = 0; c < 5; c++) {
+        if (p.wall[r][c]) placed[WALL[r][c]]++;
+      }
+    }
+  }
+  return placed;
+}
+
+// Supply-aware leaf evaluation. Same shape as evalPosition, but:
+//   • Partial pattern lines and incomplete wall bonuses are discounted by remaining-color supply.
+//   • Holding the first-player token grants a small tempo bonus.
+function evalImpossible(state, pi, placed) {
+  const p = state.players[pi];
+  let sc = p.score;
+
+  // 1. Wall scoring for completed pattern lines (this round)
+  const simWall = p.wall.map(r => [...r]);
+  for (let r = 0; r < 5; r++) {
+    if (p.pat[r].length === r + 1) {
+      const c = p.pat[r][0], col = WALL[r].indexOf(c);
+      simWall[r][col] = true;
+      sc += wallPtsFor(simWall, r, col);
+    }
+  }
+
+  // 2. Floor penalty
+  for (let i = 0; i < Math.min(p.floor.length, FLOOR_PEN.length); i++) sc += FLOOR_PEN[i];
+  sc = Math.max(0, sc);
+
+  // 3. Partial pattern line credit, scaled by reachability of the missing tiles.
+  for (let r = 0; r < 5; r++) {
+    const len = p.pat[r].length, max = r + 1;
+    if (len > 0 && len < max) {
+      const color = p.pat[r][0], col = WALL[r].indexOf(color);
+      const expectedPts = wallPtsFor(simWall, r, col);
+      const need = max - len;
+      const remaining = _COLOR_TOTAL - (placed[color] || 0);
+      const reach = Math.min(1, remaining / Math.max(need, 1));
+      const progress = len / max;
+      sc += progress * progress * expectedPts * 0.85 * reach;
+    }
+  }
+
+  // 4. End-game bonus potential, supply-discounted for incomplete bonuses.
+  // Rows: +2 each
+  for (let r = 0; r < 5; r++) {
+    const filled = simWall[r].filter(Boolean).length;
+    if (filled === 5) { sc += 2; continue; }
+    if (filled >= 2) {
+      // Check if all missing colors in this row are still reachable.
+      let supplyOK = 1;
+      for (let c = 0; c < 5; c++) {
+        if (!simWall[r][c]) {
+          const col = WALL[r][c];
+          const remaining = _COLOR_TOTAL - (placed[col] || 0);
+          if (remaining <= 0) supplyOK = Math.min(supplyOK, 0.2);
+          else if (remaining < 2) supplyOK = Math.min(supplyOK, 0.6);
+        }
+      }
+      sc += (filled / 5) * (filled / 5) * 2 * supplyOK;
+    }
+  }
+  // Columns: +7 each
+  for (let c = 0; c < 5; c++) {
+    let filled = 0;
+    for (let r = 0; r < 5; r++) if (simWall[r][c]) filled++;
+    if (filled === 5) { sc += 7; continue; }
+    if (filled >= 2) {
+      let supplyOK = 1;
+      for (let r = 0; r < 5; r++) {
+        if (!simWall[r][c]) {
+          const col = WALL[r][c];
+          const remaining = _COLOR_TOTAL - (placed[col] || 0);
+          if (remaining <= 0) supplyOK = Math.min(supplyOK, 0.2);
+        }
+      }
+      sc += (filled / 5) * (filled / 5) * 7 * supplyOK;
+    }
+  }
+  // Colors: +10 each (highest variance — and most supply-sensitive)
+  for (const col of COLORS) {
+    let n = 0;
+    for (let r = 0; r < 5; r++) {
+      const cIdx = WALL[r].indexOf(col);
+      if (simWall[r][cIdx]) n++;
+    }
+    if (n === 5) { sc += 10; continue; }
+    if (n >= 2) {
+      const remaining = _COLOR_TOTAL - (placed[col] || 0);
+      const need = 5 - n;
+      const reach = Math.min(1, remaining / Math.max(need, 1));
+      sc += (n / 5) * (n / 5) * 10 * reach;
+    }
+  }
+
+  // 5. Adjacency cluster value
+  for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) {
+    if (!simWall[r][c]) continue;
+    let adj = 0;
+    if (r > 0 && simWall[r-1][c]) adj++;
+    if (r < 4 && simWall[r+1][c]) adj++;
+    if (c > 0 && simWall[r][c-1]) adj++;
+    if (c < 4 && simWall[r][c+1]) adj++;
+    sc += adj * 0.35;
+  }
+
+  // 6. Tempo: holding the first-player token = first move next round (small but real edge).
+  if (p.first) sc += 0.6;
+
+  return sc;
+}
+
 function pickImpossible(moves) {
   const np = CFG.np;
   const meIdx = S.cur;
-  const maxDepth = np === 2 ? 4 : 3;
-  // top-K cap by depth from root. depth 0 = root (consider every move).
-  const topKByDepth = [Infinity, 8, 8, 6, 5];
+  const TIME_BUDGET_MS = 1500;
+  const HARD_DEPTH_CAP = np === 2 ? 6 : 4;
+  const startTime = performance.now();
+  const placed = _placedSupply(S);
 
-  // Net score from meIdx's perspective (we maximize this; opps minimize it).
+  // Net score from meIdx's POV (we maximize; every opponent minimizes this).
   function leafScore(state) {
-    let s = evalPosition(state, meIdx);
-    for (let i = 0; i < np; i++) if (i !== meIdx) s -= evalPosition(state, i) * 0.55;
+    let s = evalImpossible(state, meIdx, placed);
+    for (let i = 0; i < np; i++) if (i !== meIdx) s -= evalImpossible(state, i, placed) * 0.6;
     return s;
   }
 
-  // Recursive minimax. depthFromRoot starts at 1 (we already executed the root move before calling).
-  function search(state, toMove, depthFromRoot) {
-    // Terminal: depth limit, game over, or round-end (further moves only happen after round-end scoring).
+  // Sort candidate moves by a quick one-ply eval — best moves first so α-β cuts fire early.
+  // For our turn we want descending; for opponents (who minimize us) we want descending of "bad-for-us"
+  // = ascending of our scalar after their move. Both reduce to: try high-impact moves first.
+  function orderMoves(state, toMove, mvs) {
+    const scored = mvs.map(m => {
+      const s = cloneState(state); execMove(s, toMove, m);
+      let v = evalImpossible(s, meIdx, placed);
+      for (let i = 0; i < np; i++) if (i !== meIdx) v -= evalImpossible(s, i, placed) * 0.6;
+      return { m, v };
+    });
+    if (toMove === meIdx) scored.sort((a, b) => b.v - a.v);
+    else                  scored.sort((a, b) => a.v - b.v); // worst-for-us first
+    return scored.map(s => s.m);
+  }
+
+  let timedOut = false;
+  // Returns null when the time budget is exhausted (caller treats whole pass as aborted).
+  function search(state, toMove, depthLeft, alpha, beta) {
+    if (timedOut) return null;
+    if (performance.now() - startTime > TIME_BUDGET_MS) { timedOut = true; return null; }
     if (
-      depthFromRoot >= maxDepth ||
+      depthLeft === 0 ||
       state.over ||
       (state.fac.every(f => !f.length) && !state.ctr.length)
     ) {
@@ -4418,37 +4559,57 @@ function pickImpossible(moves) {
     }
     const mvs = enumerateMoves(state, toMove);
     if (!mvs.length) return leafScore(state);
-
-    const k = topKByDepth[Math.min(depthFromRoot, topKByDepth.length - 1)] || 5;
-    const cands = mvs.length > k ? prefilterMoves(state, toMove, mvs, k) : mvs;
+    const ordered = orderMoves(state, toMove, mvs);
     const next = (toMove + 1) % np;
 
     if (toMove === meIdx) {
-      let bestV = -Infinity;
-      for (const m of cands) {
+      let best = -Infinity;
+      for (const m of ordered) {
         const s = cloneState(state); execMove(s, toMove, m);
-        const v = search(s, next, depthFromRoot + 1);
-        if (v > bestV) bestV = v;
+        const v = search(s, next, depthLeft - 1, alpha, beta);
+        if (v === null) return null;
+        if (v > best) best = v;
+        if (best > alpha) alpha = best;
+        if (alpha >= beta) break; // β-cut
       }
-      return bestV;
+      return best;
     } else {
-      let worstV = Infinity;
-      for (const m of cands) {
+      let worst = Infinity;
+      for (const m of ordered) {
         const s = cloneState(state); execMove(s, toMove, m);
-        const v = search(s, next, depthFromRoot + 1);
-        if (v < worstV) worstV = v;
+        const v = search(s, next, depthLeft - 1, alpha, beta);
+        if (v === null) return null;
+        if (v < worst) worst = v;
+        if (worst < beta) beta = worst;
+        if (alpha >= beta) break; // α-cut
       }
-      return worstV;
+      return worst;
     }
   }
 
-  // Root: try every legal move (no prefilter at root — perfect play considers everything).
-  let best = moves[0], bs = -Infinity;
-  for (const m of moves) {
-    const sim = cloneState(S);
-    execMove(sim, meIdx, m);
-    const v = search(sim, (meIdx + 1) % np, 1);
-    if (v > bs) { bs = v; best = m; }
+  // Iterative deepening — keep the best move from the deepest fully-completed depth.
+  let best = moves[0];
+  // Seed with a quick depth-1 ranking so we always have a sane fallback even if depth-2 times out.
+  {
+    const ordered = orderMoves(S, meIdx, moves);
+    best = ordered[0];
+  }
+
+  for (let depth = 2; depth <= HARD_DEPTH_CAP; depth++) {
+    if (performance.now() - startTime > TIME_BUDGET_MS * 0.8) break;
+    const ordered = orderMoves(S, meIdx, moves);
+    let bestThisDepth = ordered[0], bs = -Infinity;
+    let alpha = -Infinity;
+    let aborted = false;
+    for (const m of ordered) {
+      const sim = cloneState(S); execMove(sim, meIdx, m);
+      const v = search(sim, (meIdx + 1) % np, depth - 1, alpha, Infinity);
+      if (v === null) { aborted = true; break; }
+      if (v > bs) { bs = v; bestThisDepth = m; }
+      if (bs > alpha) alpha = bs;
+    }
+    if (aborted) break;          // discard partial pass; keep previous depth's result
+    best = bestThisDepth;        // commit completed depth's pick
   }
   return best;
 }

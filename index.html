@@ -1898,6 +1898,7 @@
         <div class="setup-card" data-val="easy" onclick="selectCard(this,'diff-cards')"><div class="num">Easy</div><div class="desc">Greedy</div></div>
         <div class="setup-card sel" data-val="medium" onclick="selectCard(this,'diff-cards')"><div class="num">Medium</div><div class="desc">Strategic</div></div>
         <div class="setup-card" data-val="hard" onclick="selectCard(this,'diff-cards')"><div class="num">Hard</div><div class="desc">Lookahead</div></div>
+        <div class="setup-card" data-val="expert" onclick="selectCard(this,'diff-cards')"><div class="num">Expert</div><div class="desc">Extra Hard</div></div>
       </div>
     </div>
 
@@ -2407,6 +2408,8 @@ const Achievements = (() => {
     underdog: `<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
       <text x="18" y="24" text-anchor="middle" font-family="Cinzel, serif" font-size="14" font-weight="900" fill="currentColor">VS</text>
       <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" stroke-width="2"/></svg>`,
+    grandmaster: `<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+      <g fill="currentColor"><path d="M6 12 L11 18 L14 8 L18 20 L22 8 L25 18 L30 12 L28 26 L8 26 Z"/><rect x="8" y="27" width="20" height="3" rx="1"/></g></svg>`,
     beatAllDiff: `<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
       <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M5 11 l3 3 l6 -6"/><path d="M5 19 l3 3 l6 -6"/><path d="M5 27 l3 3 l6 -6"/>
@@ -2428,6 +2431,7 @@ const Achievements = (() => {
     { id: 'comebackKid',  name: 'Comeback Kid',    desc: 'Won after trailing by 10+ points' },
     { id: 'speedrun',     name: 'Speedrun',        desc: 'Won a game in 5 rounds or fewer' },
     { id: 'underdog',     name: 'Underdog',        desc: 'Beat the Hard AI' },
+    { id: 'grandmaster',  name: 'Grandmaster',     desc: 'Beat the Expert (Extra Hard) AI' },
     { id: 'beatAllDiff',  name: 'Beat All Difficulties', desc: 'Won at least one game on Easy, Medium, AND Hard' },
     { id: 'centurion',    name: 'Centurion',       desc: 'Played 100 lifetime games' },
   ];
@@ -2439,7 +2443,7 @@ const Achievements = (() => {
     return {
       gamesPlayed: 0,
       wins: 0, losses: 0, ties: 0,
-      easyWon: false, mediumWon: false, hardWon: false,
+      easyWon: false, mediumWon: false, hardWon: false, expertWon: false,
       bestScore: 0,
       currentStreak: 0,
       bestStreak: 0,
@@ -2448,6 +2452,7 @@ const Achievements = (() => {
         easy:   emptyDiff(),
         medium: emptyDiff(),
         hard:   emptyDiff(),
+        expert: emptyDiff(),
       },
     };
   }
@@ -2464,7 +2469,7 @@ const Achievements = (() => {
         if (!lifetime.bestMove) lifetime.bestMove = { pts: 0, desc: '', date: '' };
         // Migrate older saves that lack perDifficulty (or its newer fields)
         if (!lifetime.perDifficulty) lifetime.perDifficulty = fresh.perDifficulty;
-        for (const k of ['easy','medium','hard']) {
+        for (const k of ['easy','medium','hard','expert']) {
           if (!lifetime.perDifficulty[k]) lifetime.perDifficulty[k] = emptyDiff();
           else if (lifetime.perDifficulty[k].totalScore == null) lifetime.perDifficulty[k].totalScore = 0;
         }
@@ -2509,7 +2514,8 @@ const Achievements = (() => {
       if (isWinner) {
         if (perGame.totalRounds <= 5)           newlyUnlocked.speedrun = true;
         if (perGame.maxDeficit >= 10)           newlyUnlocked.comebackKid = true;
-        if (perGame.mode === 'ai' && perGame.difficulty === 'hard') newlyUnlocked.underdog = true;
+        if (perGame.mode === 'ai' && perGame.difficulty === 'hard')   newlyUnlocked.underdog = true;
+        if (perGame.mode === 'ai' && perGame.difficulty === 'expert') newlyUnlocked.grandmaster = true;
       }
     }
     if (perGame.bestMovePts >= 7) newlyUnlocked.crossMaster = true;
@@ -2545,6 +2551,7 @@ const Achievements = (() => {
           if (perGame.difficulty === 'easy')   lifetime.easyWon = true;
           if (perGame.difficulty === 'medium') lifetime.mediumWon = true;
           if (perGame.difficulty === 'hard')   lifetime.hardWon = true;
+          if (perGame.difficulty === 'expert') lifetime.expertWon = true;
         }
       }
     }
@@ -4058,7 +4065,7 @@ function doAI() {
   const moves = enumerateMoves(S, S.cur);
   if (!moves.length) { endTurn(); return; }
   const diff = CFG.difficulty || 'medium';
-  const best = diff === 'hard' ? pickHard(moves) : diff === 'medium' ? pickMedium(moves) : pickEasy(moves);
+  const best = diff === 'expert' ? pickExpert(moves) : diff === 'hard' ? pickHard(moves) : diff === 'medium' ? pickMedium(moves) : pickEasy(moves);
   execMove(S, S.cur, best);
   S.phase = 'pick';
   endTurn();
@@ -4275,6 +4282,86 @@ function pickHard(moves) {
       sc = worstCase;
     }
     if(sc>bs){bs=sc;best=m;}
+  }
+  return best;
+}
+
+// ========== EXPERT (Extra Hard): 2-ply minimax with prefiltering ==========
+// Looks me → opp → me. Prefilters at every layer so it stays snappy.
+// Treats opponents adversarially (they'll pick moves that minimize our advantage).
+function pickExpert(moves) {
+  const np = CFG.np;
+  const meIdx = S.cur;
+  // Prefilter our own candidate moves to the top ~12 by quick eval (covers strong + reasonable plays)
+  const myCands = moves.length > 12 ? prefilterMoves(S, meIdx, moves, 12) : moves;
+
+  let best = myCands[0], bs = -Infinity;
+  for (const m of myCands) {
+    const sim1 = cloneState(S);
+    execMove(sim1, meIdx, m);
+
+    // If this move ends the round, we can score directly without further lookahead.
+    const roundOver1 = sim1.fac.every(f=>!f.length) && !sim1.ctr.length;
+    let sc;
+    if (roundOver1) {
+      sc = evalPosition(sim1, meIdx);
+      for (let i=0;i<np;i++) if(i!==meIdx) sc -= evalPosition(sim1,i) * 0.4;
+    } else {
+      // Walk every other player's best response in turn order, each picking adversarially.
+      // For 2P (most common case) this is one opp turn, then back to me.
+      let cur = (meIdx + 1) % np;
+      let state = sim1;
+      let opponentsDone = 0;
+      let aborted = false;
+      while (opponentsDone < np - 1) {
+        const oppMoves = enumerateMoves(state, cur);
+        if (!oppMoves.length) { aborted = true; break; }
+        const oppCands = oppMoves.length > 6 ? prefilterMoves(state, cur, oppMoves, 6) : oppMoves;
+        // Opp picks the move that MINIMIZES (myEval - oppEval) — i.e., adversarial.
+        let worstForMe = Infinity, oppPick = oppCands[0];
+        for (const om of oppCands) {
+          const s = cloneState(state);
+          execMove(s, cur, om);
+          const myV = evalPosition(s, meIdx);
+          const opV = evalPosition(s, cur);
+          const v = myV - opV * 0.6;
+          if (v < worstForMe) { worstForMe = v; oppPick = om; }
+        }
+        const next = cloneState(state);
+        execMove(next, cur, oppPick);
+        state = next;
+        cur = (cur + 1) % np;
+        opponentsDone++;
+      }
+      if (aborted) {
+        sc = evalPosition(state, meIdx);
+        for (let i=0;i<np;i++) if(i!==meIdx) sc -= evalPosition(state,i) * 0.5;
+      } else {
+        // Now it's our turn again — pick our BEST response and use that as the score.
+        const roundOver2 = state.fac.every(f=>!f.length) && !state.ctr.length;
+        if (roundOver2) {
+          sc = evalPosition(state, meIdx);
+          for (let i=0;i<np;i++) if(i!==meIdx) sc -= evalPosition(state,i) * 0.5;
+        } else {
+          const myMoves2 = enumerateMoves(state, meIdx);
+          if (!myMoves2.length) {
+            sc = evalPosition(state, meIdx);
+          } else {
+            const myCands2 = myMoves2.length > 6 ? prefilterMoves(state, meIdx, myMoves2, 6) : myMoves2;
+            let bestRespVal = -Infinity;
+            for (const m2 of myCands2) {
+              const s = cloneState(state);
+              execMove(s, meIdx, m2);
+              let v = evalPosition(s, meIdx);
+              for (let i=0;i<np;i++) if(i!==meIdx) v -= evalPosition(s,i) * 0.5;
+              if (v > bestRespVal) bestRespVal = v;
+            }
+            sc = bestRespVal;
+          }
+        }
+      }
+    }
+    if (sc > bs) { bs = sc; best = m; }
   }
   return best;
 }
@@ -5012,7 +5099,7 @@ function renderLifetimeStats() {
 
   // Per-difficulty (vs AI) breakdown — proper table with header
   const pd = s.perDifficulty || {};
-  const anyDiffPlayed = ['easy','medium','hard'].some(k => (pd[k]?.played || 0) > 0);
+  const anyDiffPlayed = ['easy','medium','hard','expert'].some(k => (pd[k]?.played || 0) > 0);
   if (anyDiffPlayed) {
     html += `
       <div class="lt-section">
@@ -5027,7 +5114,7 @@ function renderLifetimeStats() {
             </tr>
           </thead>
           <tbody>`;
-    for (const diff of ['easy','medium','hard']) {
+    for (const diff of ['easy','medium','hard','expert']) {
       const d = pd[diff] || emptyDiffStub();
       const wr = d.played > 0 ? Math.round((d.wins / d.played) * 100) : null;
       const avg = d.played > 0 ? Math.round((d.totalScore || 0) / d.played) : null;

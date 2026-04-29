@@ -769,6 +769,17 @@
   }
   #overlay-content h2 { font-family: 'Cinzel', serif; font-size: 32px; color: var(--wood-d); margin-bottom: 20px; letter-spacing: 3px; }
   #overlay-content .game-over-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+  /* Parchment-friendly ghost button — overrides the dark-bg version used on the setup screen. */
+  #overlay-content .btn-ghost {
+    background: rgba(255,255,255,.35);
+    color: var(--wood-d);
+    border: 1px solid var(--gold-d);
+    text-shadow: none;
+  }
+  #overlay-content .btn-ghost:hover {
+    background: rgba(201,169,97,.25);
+    color: var(--ink);
+  }
   #overlay-content .scores-list { text-align: left; margin: 0 auto 24px; display: inline-block; min-width: 260px; }
   #overlay-content .score-row { display: flex; justify-content: space-between; gap: 40px; padding: 8px 12px; border-bottom: 1px solid var(--parchment-sh); font-size: 16px; font-family: 'Cinzel', serif; }
   #overlay-content .score-row:first-child { color: var(--wood-d); font-weight: 700; background: rgba(201,169,97,.2); border-radius: 6px; }

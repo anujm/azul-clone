@@ -768,6 +768,7 @@
     box-shadow: 0 0 0 4px var(--wood), 0 0 0 6px var(--wood-d), 0 0 0 7px var(--gold), 0 20px 60px rgba(0,0,0,.6);
   }
   #overlay-content h2 { font-family: 'Cinzel', serif; font-size: 32px; color: var(--wood-d); margin-bottom: 20px; letter-spacing: 3px; }
+  #overlay-content .game-over-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
   #overlay-content .scores-list { text-align: left; margin: 0 auto 24px; display: inline-block; min-width: 260px; }
   #overlay-content .score-row { display: flex; justify-content: space-between; gap: 40px; padding: 8px 12px; border-bottom: 1px solid var(--parchment-sh); font-size: 16px; font-family: 'Cinzel', serif; }
   #overlay-content .score-row:first-child { color: var(--wood-d); font-weight: 700; background: rgba(201,169,97,.2); border-radius: 6px; }
@@ -940,6 +941,357 @@
     position: relative;
     box-shadow: 0 0 0 4px var(--wood), 0 0 0 6px var(--wood-d), 0 0 0 7px var(--gold), 0 20px 50px rgba(0,0,0,.5);
   }
+
+  /* ===== LIFETIME STATS OVERLAY ===== */
+  #stats-overlay { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,.82); backdrop-filter: blur(5px); }
+  #stats-overlay.show { display: flex; align-items: center; justify-content: center; }
+  .stats-card {
+    background: radial-gradient(ellipse at 30% 20%, #f5ebcf 0%, var(--parchment) 50%, var(--parchment-d) 100%);
+    color: var(--ink);
+    border-radius: 10px;
+    padding: 28px 32px 22px;
+    max-width: 560px;
+    width: 92%;
+    max-height: 88vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 0 0 4px var(--wood), 0 0 0 6px var(--wood-d), 0 0 0 7px var(--gold), 0 20px 50px rgba(0,0,0,.5);
+    animation: fadeIn .35s ease;
+  }
+  .stats-card h3 {
+    font-family: 'Cinzel', serif;
+    color: var(--wood-d);
+    font-size: 22px;
+    margin-bottom: 18px;
+    letter-spacing: 4px;
+    padding-right: 36px;
+    text-transform: uppercase;
+  }
+  .stats-card .stats-empty {
+    text-align: center;
+    font-style: italic;
+    color: var(--wood);
+    padding: 20px 0;
+    font-size: 14px;
+  }
+  /* The 4 numerical tiles */
+  .stats-card .lt-tiles {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .stats-card .lt-tile {
+    background: rgba(255,255,255,.5);
+    border: 1px solid var(--parchment-sh);
+    border-radius: 8px;
+    padding: 10px 6px 8px;
+    text-align: center;
+  }
+  .stats-card .lt-tile .v {
+    font-family: 'Cinzel', serif;
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--wood-d);
+    line-height: 1.05;
+  }
+  .stats-card .lt-tile .k {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    color: var(--wood);
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+  /* Per-difficulty table */
+  .stats-card .lt-diff-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(255,255,255,.4);
+    border: 1px solid var(--parchment-sh);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .stats-card .lt-diff-table thead th {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--wood-d);
+    opacity: .8;
+    padding: 8px 10px;
+    text-align: right;
+    background: rgba(139,90,43,.08);
+    border-bottom: 1px solid var(--parchment-sh);
+    font-weight: 700;
+  }
+  .stats-card .lt-diff-table thead th:first-child { text-align: left; }
+  .stats-card .lt-diff-table tbody td {
+    padding: 7px 10px;
+    font-size: 13px;
+    color: var(--ink);
+    text-align: right;
+    border-top: 1px solid rgba(168,143,90,.2);
+  }
+  .stats-card .lt-diff-table tbody tr:first-child td { border-top: none; }
+  .stats-card .lt-diff-table tbody td:first-child { text-align: left; }
+
+  .stats-card .lt-cell-name {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--wood-d);
+    font-weight: 700;
+  }
+  .stats-card .lt-cell-record b {
+    font-family: 'Cinzel', serif;
+    color: #2d5a2d;
+    font-weight: 900;
+  }
+  .stats-card .lt-cell-record .muted { color: var(--wood); opacity: .7; font-style: italic; }
+  .stats-card .lt-cell-avg,
+  .stats-card .lt-cell-best {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    color: var(--wood-d);
+  }
+  .stats-card .lt-cell-avg .muted,
+  .stats-card .lt-cell-best .muted { color: var(--wood); opacity: .5; }
+  @media (max-width: 480px) {
+    .stats-card .lt-diff-table tbody td { padding: 6px 6px; font-size: 11px; }
+    .stats-card .lt-diff-table thead th { padding: 6px 6px; font-size: 9px; letter-spacing: 1px; }
+    .stats-card .lt-cell-name { font-size: 10px; letter-spacing: 1px; }
+  }
+
+  /* Best move card */
+  .stats-card .lt-section { margin-bottom: 18px; }
+  .stats-card .lt-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--wood-d);
+    text-transform: uppercase;
+    opacity: .75;
+    margin-bottom: 8px;
+  }
+  /* Achievement progress + grid */
+  .stats-card .lt-ach-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .stats-card .lt-ach-progress {
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    color: var(--wood-d);
+    font-weight: 700;
+  }
+  .stats-card .lt-ach-progress .total { color: var(--wood); opacity: .65; }
+  .stats-card .lt-ach-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(54px, 1fr));
+    gap: 10px;
+  }
+  .stats-card .lt-ach-cell {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+    position: relative;
+    margin: 0 auto;
+  }
+  .stats-card .lt-ach-cell.unlocked {
+    background: radial-gradient(circle at 30% 30%, #ffe9a8 0%, var(--gold) 60%, #8a6f2f 100%);
+    color: var(--ink);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 3px rgba(139,90,43,.4), 0 2px 4px rgba(0,0,0,.25);
+  }
+  .stats-card .lt-ach-cell.locked {
+    background: radial-gradient(circle at 30% 30%, #d8d0bd 0%, #a89d80 60%, #66604f 100%);
+    color: rgba(0,0,0,.35);
+    filter: grayscale(.5);
+  }
+  .stats-card .lt-ach-cell svg { width: 28px; height: 28px; }
+  /* Reuse the same hover tooltip pattern from .ach-row */
+  .stats-card .lt-ach-cell[data-name]::before,
+  .stats-card .lt-ach-cell[data-name]::after {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .15s, transform .15s;
+    z-index: 10;
+  }
+  .stats-card .lt-ach-cell[data-name]::before {
+    content: attr(data-name) " \2014 " attr(data-desc);
+    background: var(--ink);
+    color: var(--parchment);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 12px;
+    line-height: 1.3;
+    padding: 6px 10px;
+    border-radius: 6px;
+    width: max-content;
+    max-width: 220px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,.5);
+  }
+  .stats-card .lt-ach-cell[data-name]::after {
+    content: "";
+    border: 6px solid transparent;
+    border-top-color: var(--ink);
+    bottom: calc(100% + 2px);
+  }
+  .stats-card .lt-ach-cell:hover::before,
+  .stats-card .lt-ach-cell:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  /* Reset button */
+  .stats-card .lt-actions {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--parchment-sh);
+    display: flex;
+    justify-content: center;
+  }
+  .stats-card .lt-reset {
+    background: rgba(192,57,43,.1);
+    border: 1px solid var(--accent);
+    color: var(--red-d);
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: .15s;
+  }
+  .stats-card .lt-reset:hover { background: var(--accent); color: #fff; }
+  @media (max-width: 640px) {
+    .stats-card { padding: 22px 16px 16px; max-width: calc(100vw - 16px); }
+    .stats-card h3 { font-size: 17px; letter-spacing: 2px; }
+    .stats-card .lt-tile .v { font-size: 19px; }
+    .stats-card .lt-tile .k { font-size: 8px; }
+  }
+
+  /* ===== ACHIEVEMENT BADGES (game-over) ===== */
+  .ach-row {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--parchment-sh);
+    text-align: center;
+  }
+  .ach-row-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--wood-d);
+    text-transform: uppercase;
+    opacity: .7;
+    margin-bottom: 10px;
+  }
+  .ach-row .ach-icons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .ach-row .ach-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #ffe9a8 0%, var(--gold) 60%, #8a6f2f 100%);
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.5),
+      inset 0 -2px 3px rgba(139,90,43,.4),
+      0 2px 6px rgba(0,0,0,.35),
+      0 0 14px rgba(201,169,97,.5);
+    cursor: default;
+    transition: transform .2s, box-shadow .2s;
+    position: relative;
+    animation: achPop .55s cubic-bezier(.4,1.6,.6,1) backwards;
+  }
+  /* Custom CSS tooltip — shows immediately on hover, no click required */
+  .ach-row .ach-icon[data-name]::before,
+  .ach-row .ach-icon[data-name]::after {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .15s ease, transform .15s ease;
+    z-index: 10;
+  }
+  .ach-row .ach-icon[data-name]::before {
+    content: attr(data-name) " \2014 " attr(data-desc);
+    background: var(--ink);
+    color: var(--parchment);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 12px;
+    line-height: 1.3;
+    padding: 6px 10px;
+    border-radius: 6px;
+    white-space: normal;
+    width: max-content;
+    max-width: 220px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,.5);
+  }
+  .ach-row .ach-icon[data-name]::after {
+    content: "";
+    border: 6px solid transparent;
+    border-top-color: var(--ink);
+    bottom: calc(100% + 4px);
+  }
+  .ach-row .ach-icon:hover::before,
+  .ach-row .ach-icon:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  .ach-row .ach-icon:nth-child(1) { animation-delay: 0s; }
+  .ach-row .ach-icon:nth-child(2) { animation-delay: .12s; }
+  .ach-row .ach-icon:nth-child(3) { animation-delay: .24s; }
+  .ach-row .ach-icon:nth-child(4) { animation-delay: .36s; }
+  .ach-row .ach-icon:nth-child(5) { animation-delay: .48s; }
+  .ach-row .ach-icon:nth-child(n+6) { animation-delay: .6s; }
+  .ach-row .ach-icon:hover {
+    transform: scale(1.12) rotate(-3deg);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.6),
+      0 4px 12px rgba(0,0,0,.45),
+      0 0 22px rgba(201,169,97,.8);
+  }
+  .ach-row .ach-icon svg {
+    width: 30px;
+    height: 30px;
+  }
+  @keyframes achPop {
+    0%   { transform: scale(0) rotate(-30deg); opacity: 0; }
+    60%  { transform: scale(1.15) rotate(5deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+  /* Brand-new (first-ever) achievement: extra pulsing gold ring around the badge.
+     Implemented as a box-shadow ring so we don't conflict with the tooltip ::after arrow. */
+  .ach-row .ach-icon.brand-new {
+    animation: achPop .55s cubic-bezier(.4,1.6,.6,1) backwards, brandNewPulse 1.8s ease-in-out infinite .55s;
+  }
+  @keyframes brandNewPulse {
+    0%, 100% { box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 3px rgba(139,90,43,.4), 0 2px 6px rgba(0,0,0,.35), 0 0 0 0 rgba(201,169,97,.9); }
+    50%      { box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 3px rgba(139,90,43,.4), 0 2px 6px rgba(0,0,0,.35), 0 0 0 8px rgba(201,169,97,0); }
+  }
+
   .tut-close {
     position: absolute;
     top: 10px;
@@ -1549,9 +1901,10 @@
       </div>
     </div>
 
-    <div id="local-actions" style="display:flex; gap:12px; margin-top:8px;">
+    <div id="local-actions" style="display:flex; gap:12px; margin-top:8px; flex-wrap:wrap; justify-content:center;">
       <button class="btn btn-primary" onclick="startGame()">Start Game</button>
       <button class="btn btn-ghost" onclick="showTutorial()">How to Play</button>
+      <button class="btn btn-ghost" onclick="showLifetimeStats()">Stats</button>
     </div>
 
     <!-- Online setup -->
@@ -1623,7 +1976,10 @@
     <h2 id="winner-text"></h2>
     <div id="final-scores" class="scores-list"></div>
     <div id="bonus-info" class="bonus-details"></div>
-    <button class="btn btn-primary" onclick="restartGame()">Play Again</button>
+    <div class="game-over-actions">
+      <button class="btn btn-primary" onclick="playAgain()">Play Again</button>
+      <button class="btn btn-ghost" onclick="restartGame()">Main Menu</button>
+    </div>
   </div>
 </div>
 
@@ -1654,6 +2010,16 @@
     </div>
   </div>
 </div>
+
+<!-- ===== LIFETIME STATS ===== -->
+<div id="stats-overlay">
+  <div class="stats-card">
+    <button class="tut-close" onclick="closeLifetimeStats()" aria-label="Close stats" title="Close (Esc)">&times;</button>
+    <h3>Lifetime Stats</h3>
+    <div id="stats-body"></div>
+  </div>
+</div>
+
 
 <script>
 // ============ AUDIO ENGINE ============
@@ -1999,6 +2365,246 @@ document.addEventListener('click', e => {
   m.classList.remove('show');
 });
 window.Snd = Snd; // expose for inline onclick handlers
+
+
+// ============ ACHIEVEMENTS (the only stats feature) ============
+// Each achievement renders as a custom SVG icon (gold/parchment styled).
+// Description shows on hover via the title attribute.
+const Achievements = (() => {
+  // Custom SVG drawing functions — each returns inline SVG markup styled to fit a 36px box.
+  // Stroke uses currentColor so we can switch unlocked (gold) vs locked (grey) via CSS.
+  const SVGS = {
+    mosaicMaster: `<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+      <g fill="currentColor"><rect x="6"  y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/><rect x="22" y="14" width="6" height="6" rx="1"/><rect x="10" y="6"  width="6" height="6" rx="1" opacity=".7"/><rect x="18" y="6"  width="6" height="6" rx="1" opacity=".7"/><rect x="10" y="22" width="6" height="6" rx="1" opacity=".7"/><rect x="18" y="22" width="6" height="6" rx="1" opacity=".7"/></g></svg>`,
+    quintacolor: `<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="currentColor" stroke-width="2"><circle cx="6"  cy="18" r="3"/><circle cx="13" cy="18" r="3"/><circle cx="20" cy="18" r="3"/><circle cx="27" cy="18" r="3" /><circle cx="34" cy="18" r="3" transform="translate(-4 0)"/></g></svg>`,
+    ironWall: `<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="5" y="5" width="26" height="26" rx="2"/>
+        <line x1="5"  y1="11.5" x2="31" y2="11.5"/><line x1="5"  y1="18"   x2="31" y2="18"/><line x1="5"  y1="24.5" x2="31" y2="24.5"/>
+        <line x1="11.5" y1="5" x2="11.5" y2="31"/><line x1="18"   y1="5" x2="18"   y2="31"/><line x1="24.5" y1="5" x2="24.5" y2="31"/>
+      </g></svg>`,
+    hattrick: `<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+        <line x1="6" y1="11" x2="30" y2="11"/><line x1="6" y1="18" x2="30" y2="18"/><line x1="6" y1="25" x2="30" y2="25"/>
+      </g></svg>`,
+    tetrarch: `<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+        <line x1="6" y1="9"  x2="30" y2="9"/><line x1="6" y1="15" x2="30" y2="15"/><line x1="6" y1="21" x2="30" y2="21"/><line x1="6" y1="27" x2="30" y2="27"/>
+      </g><path d="M10 6 l3 -4 l5 4 l5 -4 l3 4 z" fill="currentColor"/></svg>`,
+    untouchable: `<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+      <path d="M18 4 L30 9 V18 C30 25 24 30 18 32 C12 30 6 25 6 18 V9 Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M13 18 l4 4 l8 -8" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    crossMaster: `<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+      <g fill="currentColor"><rect x="15" y="6" width="6" height="24" rx="1"/><rect x="6" y="15" width="24" height="6" rx="1"/></g></svg>`,
+    bullseye: `<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="13"/><circle cx="18" cy="18" r="8"/><circle cx="18" cy="18" r="3" fill="currentColor"/></g></svg>`,
+    comebackKid: `<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5 26 L13 18 L19 23 L29 11" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M23 11 L31 11 L31 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    speedrun: `<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+      <path d="M21 4 L9 20 L17 20 L15 32 L27 14 L19 14 Z" fill="currentColor"/></svg>`,
+    underdog: `<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+      <text x="18" y="24" text-anchor="middle" font-family="Cinzel, serif" font-size="14" font-weight="900" fill="currentColor">VS</text>
+      <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" stroke-width="2"/></svg>`,
+    beatAllDiff: `<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 11 l3 3 l6 -6"/><path d="M5 19 l3 3 l6 -6"/><path d="M5 27 l3 3 l6 -6"/>
+        <text x="22" y="29" font-family="Cinzel, serif" font-size="13" font-weight="900" stroke="none" fill="currentColor">EMH</text>
+      </g></svg>`,
+    centurion: `<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+      <text x="18" y="26" text-anchor="middle" font-family="Cinzel, serif" font-size="22" font-weight="900" fill="currentColor">100</text></svg>`,
+  };
+
+  const LIST = [
+    { id: 'mosaicMaster', name: 'Mosaic Master',   desc: 'Collected all 5 of one color on the wall' },
+    { id: 'quintacolor',  name: 'Quintacolor',     desc: 'Completed all 5 colors in one game' },
+    { id: 'ironWall',     name: 'Iron Wall',       desc: 'Filled all 25 wall slots in one game' },
+    { id: 'hattrick',     name: 'Hattrick',        desc: 'Completed 3+ horizontal rows in one game' },
+    { id: 'tetrarch',     name: 'Tetrarch',        desc: 'Completed 4+ horizontal rows in one game' },
+    { id: 'untouchable',  name: 'Untouchable',     desc: 'Finished a game with zero floor penalty' },
+    { id: 'crossMaster',  name: 'Cross Master',    desc: 'Scored 7+ points from a single placement' },
+    { id: 'bullseye',     name: 'Bullseye',        desc: 'Scored 9+ points from a single placement' },
+    { id: 'comebackKid',  name: 'Comeback Kid',    desc: 'Won after trailing by 10+ points' },
+    { id: 'speedrun',     name: 'Speedrun',        desc: 'Won a game in 5 rounds or fewer' },
+    { id: 'underdog',     name: 'Underdog',        desc: 'Beat the Hard AI' },
+    { id: 'beatAllDiff',  name: 'Beat All Difficulties', desc: 'Won at least one game on Easy, Medium, AND Hard' },
+    { id: 'centurion',    name: 'Centurion',       desc: 'Played 100 lifetime games' },
+  ];
+  const KEY = 'azul-clone-achievements-v1';
+
+  let unlocked = {};
+  function emptyDiff() { return { played: 0, wins: 0, bestScore: 0, totalScore: 0 }; }
+  function emptyLifetime() {
+    return {
+      gamesPlayed: 0,
+      wins: 0, losses: 0, ties: 0,
+      easyWon: false, mediumWon: false, hardWon: false,
+      bestScore: 0,
+      currentStreak: 0,
+      bestStreak: 0,
+      bestMove: { pts: 0, desc: '', date: '' },
+      perDifficulty: {
+        easy:   emptyDiff(),
+        medium: emptyDiff(),
+        hard:   emptyDiff(),
+      },
+    };
+  }
+  let lifetime = emptyLifetime();
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        unlocked = parsed.unlocked || {};
+        const fresh = emptyLifetime();
+        lifetime = { ...fresh, ...(parsed.lifetime || {}) };
+        if (!lifetime.bestMove) lifetime.bestMove = { pts: 0, desc: '', date: '' };
+        // Migrate older saves that lack perDifficulty (or its newer fields)
+        if (!lifetime.perDifficulty) lifetime.perDifficulty = fresh.perDifficulty;
+        for (const k of ['easy','medium','hard']) {
+          if (!lifetime.perDifficulty[k]) lifetime.perDifficulty[k] = emptyDiff();
+          else if (lifetime.perDifficulty[k].totalScore == null) lifetime.perDifficulty[k].totalScore = 0;
+        }
+      }
+    } catch(e) {}
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify({ unlocked, lifetime })); } catch(e) {}
+  }
+  function reset() {
+    unlocked = {};
+    lifetime = emptyLifetime();
+    save();
+  }
+  function getLifetime() { return lifetime; }
+  function getUnlocked() { return unlocked; }
+
+  // Compute which achievements were unlocked DURING this game.
+  // Returns a map { id: true } for the ones that newly trigger this game.
+  // Also updates persistent state.
+  function evaluateGame(perGame) {
+    const newlyUnlocked = {};
+    const players = perGame.players;
+
+    // Determine "you" — Hot Seat has no single human, so consider every non-AI player as candidate
+    let candidates;
+    if (perGame.localPlayerIdx >= 0) candidates = [players[perGame.localPlayerIdx]];
+    else candidates = players.filter(p => !p.isAI);
+
+    for (const p of candidates) {
+      const wallTiles = p.wall.flat().filter(Boolean).length;
+      const isWinner = perGame.winners.includes(p);
+      const colorsCompleted = countCompletedColors(p.wall);
+      const rowsCompleted = countCompletedRows(p.wall);
+
+      if (colorsCompleted >= 1) newlyUnlocked.mosaicMaster = true;
+      if (colorsCompleted >= 5) newlyUnlocked.quintacolor = true;
+      if (wallTiles >= 25)      newlyUnlocked.ironWall = true;
+      if (rowsCompleted >= 3)   newlyUnlocked.hattrick = true;
+      if (rowsCompleted >= 4)   newlyUnlocked.tetrarch = true;
+      if (perGame.localFloorPenalty === 0) newlyUnlocked.untouchable = true;
+      if (isWinner) {
+        if (perGame.totalRounds <= 5)           newlyUnlocked.speedrun = true;
+        if (perGame.maxDeficit >= 10)           newlyUnlocked.comebackKid = true;
+        if (perGame.mode === 'ai' && perGame.difficulty === 'hard') newlyUnlocked.underdog = true;
+      }
+    }
+    if (perGame.bestMovePts >= 7) newlyUnlocked.crossMaster = true;
+    if (perGame.bestMovePts >= 9) newlyUnlocked.bullseye = true;
+
+    // ----- Update lifetime state -----
+    lifetime.gamesPlayed = (lifetime.gamesPlayed || 0) + 1;
+    if (perGame.localPlayerIdx >= 0) {
+      const me = players[perGame.localPlayerIdx];
+      const won = perGame.winners.includes(me);
+      const tied = won && perGame.winners.length > 1;
+      if (tied) lifetime.ties = (lifetime.ties || 0) + 1;
+      else if (won) lifetime.wins = (lifetime.wins || 0) + 1;
+      else lifetime.losses = (lifetime.losses || 0) + 1;
+      // Streak
+      if (won && !tied) {
+        lifetime.currentStreak = (lifetime.currentStreak || 0) + 1;
+        if (lifetime.currentStreak > (lifetime.bestStreak || 0)) lifetime.bestStreak = lifetime.currentStreak;
+      } else {
+        lifetime.currentStreak = 0;
+      }
+      // Best score
+      if (me.score > (lifetime.bestScore || 0)) lifetime.bestScore = me.score;
+      // Per-difficulty stats (vs-AI games only)
+      if (perGame.mode === 'ai' && lifetime.perDifficulty[perGame.difficulty]) {
+        const pd = lifetime.perDifficulty[perGame.difficulty];
+        pd.played++;
+        if (won && !tied) pd.wins++;
+        if (me.score > (pd.bestScore || 0)) pd.bestScore = me.score;
+        pd.totalScore = (pd.totalScore || 0) + me.score;
+        // Per-difficulty win flags (for Beat All Difficulties achievement)
+        if (won) {
+          if (perGame.difficulty === 'easy')   lifetime.easyWon = true;
+          if (perGame.difficulty === 'medium') lifetime.mediumWon = true;
+          if (perGame.difficulty === 'hard')   lifetime.hardWon = true;
+        }
+      }
+    }
+    // Best move ever (across any game, any player)
+    if (perGame.bestMovePts > (lifetime.bestMove.pts || 0)) {
+      lifetime.bestMove = {
+        pts: perGame.bestMovePts,
+        desc: perGame.bestMoveDesc || '',
+        date: new Date().toISOString().slice(0, 10),
+      };
+    }
+    if (lifetime.easyWon && lifetime.mediumWon && lifetime.hardWon) newlyUnlocked.beatAllDiff = true;
+    if (lifetime.gamesPlayed >= 100) newlyUnlocked.centurion = true;
+
+    // Mark new ones as unlocked in persistent state, but return ALL earned-this-game
+    // so the player sees their badges even if they've earned them before.
+    const trulyNew = {};
+    for (const id of Object.keys(newlyUnlocked)) {
+      if (!unlocked[id]) trulyNew[id] = true;
+      unlocked[id] = true;
+    }
+    save();
+    return { earned: newlyUnlocked, brandNew: trulyNew };
+  }
+
+  function countCompletedRows(wall) {
+    let n = 0;
+    for (let r = 0; r < 5; r++) if (wall[r].every(c => c)) n++;
+    return n;
+  }
+  function countCompletedColors(wall) {
+    // Each color has a fixed diagonal. Reuse the WALL pattern (will be defined later in script load order; we re-derive here).
+    const W = [
+      ['blue','yellow','red','black','cyan'],
+      ['cyan','blue','yellow','red','black'],
+      ['black','cyan','blue','yellow','red'],
+      ['red','black','cyan','blue','yellow'],
+      ['yellow','red','black','cyan','blue'],
+    ];
+    let n = 0;
+    for (const col of ['blue','yellow','red','black','cyan']) {
+      let count = 0;
+      for (let r = 0; r < 5; r++) {
+        const c = W[r].indexOf(col);
+        if (wall[r][c]) count++;
+      }
+      if (count === 5) n++;
+    }
+    return n;
+  }
+
+  function getList() { return LIST; }
+  function getSvg(id) { return SVGS[id] || ''; }
+  function isUnlocked(id) { return !!unlocked[id]; }
+
+  load();
+  return { evaluateGame, getList, getSvg, isUnlocked, getLifetime, getUnlocked, reset };
+})();
+window.Achievements = Achievements;
+
 
 // ============ NETWORKING (PeerJS) ============
 const Net = (() => {
@@ -3110,6 +3716,13 @@ async function endRound() {
     floorCount: p.floor.length,
     hadFirst: p.floor.includes('first'),
   }));
+  // Lightweight achievement-tracking globals (reset on first round of game)
+  if (S.round === 1) {
+    window._bestMovePts = 0;
+    window._bestMoveDesc = '';
+    window._maxGameDeficit = 0;
+    window._localFloorPenalty = 0;
+  }
 
   if (scoringSpeed !== 'instant') Snd.SFX.roundEnd();
   await showBanner(`Round ${S.round}`, 'Scoring begins', 1300);
@@ -3199,6 +3812,14 @@ async function endRound() {
       p.score += pts;
       details[pi].wallPts += pts;
       popScore(pi);
+      // Track best single placement across the game (for Cross Master / Bullseye + lifetime stats)
+      if (pts > (window._bestMovePts || 0)) {
+        window._bestMovePts = pts;
+        window._bestMoveDesc = (h>0&&v>0) ? `${h+1} across \u00D7 ${v+1} down`
+                              : (h>0)    ? `${h+1} in a row`
+                              : (v>0)    ? `${v+1} in a column`
+                              :            'isolated tile';
+      }
 
       // Check for row/column completion mid-round (visual celebration only)
       const rowDone = p.wall[r].every(c => c);
@@ -3237,6 +3858,9 @@ async function endRound() {
 
       details[pi].floorPts = totalPen;
       p.score = Math.max(0, p.score + totalPen);
+      // Track local player's cumulative floor penalty for Untouchable achievement
+      const localIdx = Net.isOnline() ? Net.getMyIdx() : (CFG.ai ? 0 : -1);
+      if (pi === localIdx) window._localFloorPenalty = (window._localFloorPenalty || 0) + (-totalPen);
       // Show cumulative penalty
       floatPoints(floorEl, `${totalPen}`, 'neg');
       popScore(pi);
@@ -3252,6 +3876,13 @@ async function endRound() {
   }
   if (stale()) return;
   clearFocus();
+  // Capture max deficit at round end (for Comeback Kid)
+  const scores = S.players.map(p => p.score);
+  const leader = Math.max(...scores);
+  for (const sc of scores) {
+    const def = leader - sc;
+    if (def > (window._maxGameDeficit || 0)) window._maxGameDeficit = def;
+  }
 
   const isEnd = S.players.some(p => p.wall.some(r => r.every(c => c)));
   if (isEnd) {
@@ -3933,6 +4564,56 @@ function showGameOver() {
     info = 'Bonuses: Complete row +2 | Complete column +7 | All 5 of one color +10';
   }
   document.getElementById('bonus-info').textContent = info;
+
+  // Evaluate achievements and render any newly unlocked badges
+  if (!byForfeit) {
+    let localIdx = -1, mode = 'ai';
+    if (Net.isOnline()) { localIdx = Net.getMyIdx(); mode = 'online'; }
+    else if (CFG.ai)   { localIdx = 0; mode = 'ai'; }
+    else                { mode = 'hotseat'; }
+    const me = localIdx >= 0 ? S.players[localIdx] : null;
+    const myFloor = me ? me.floor.length : 0; // floor was cleared by scoring; this is a rough check at game-end (always 0)
+    // Compute floor-penalty heuristic: track via running scoring isn't preserved, so we approximate:
+    // a player has zero floor penalty if they never had floor tiles. We can't reconstruct that here cheaply,
+    // so we use a simple proxy: floor penalty is "0" only if their score equals the sum of placed-wall scoring.
+    // A pragmatic substitute: pass through detail kept by endRound. Skip Untouchable detection if we lack data.
+    const perGame = {
+      players: S.players,
+      winners,
+      localPlayerIdx: localIdx,
+      mode,
+      difficulty: CFG.difficulty || 'medium',
+      totalRounds: S.round,
+      maxDeficit: window._maxGameDeficit || 0,
+      bestMovePts: window._bestMovePts || 0,
+      bestMoveDesc: window._bestMoveDesc || '',
+      localFloorPenalty: window._localFloorPenalty != null ? window._localFloorPenalty : 0,
+    };
+    const result = Achievements.evaluateGame(perGame);
+    renderAchievementBadges(result.earned, result.brandNew);
+  }
+}
+
+function renderAchievementBadges(earned, brandNew) {
+  const container = document.getElementById('overlay-content');
+  const prev = container.querySelector('.ach-row');
+  if (prev) prev.remove();
+  const ids = Object.keys(earned);
+  if (ids.length === 0) return;
+  const list = Achievements.getList();
+  const row = document.createElement('div');
+  row.className = 'ach-row';
+  const hasNew = Object.keys(brandNew).length > 0;
+  const label = hasNew ? `Unlocked${Object.keys(brandNew).length > 0 ? ' \u2014 ' + Object.keys(brandNew).length + ' New!' : ''}` : 'Earned This Game';
+  row.innerHTML = `<div class="ach-row-label">${label}</div><div class="ach-icons">` +
+    ids.map(id => {
+      const a = list.find(x => x.id === id);
+      if (!a) return '';
+      const isNew = !!brandNew[id];
+      return `<div class="ach-icon${isNew ? ' brand-new' : ''}" data-name="${a.name}" data-desc="${a.desc}" aria-label="${a.name}: ${a.desc}">${Achievements.getSvg(id)}</div>`;
+    }).join('') +
+    `</div>`;
+  container.appendChild(row);
 }
 
 // ============ SETUP ============
@@ -3965,6 +4646,30 @@ function startGame() {
   const ga = document.getElementById('game-area');
   ga.style.display = 'flex'; ga.style.flexDirection = 'column'; ga.style.alignItems = 'center'; ga.style.gap = '14px';
 
+  initState(np, ai, difficulty);
+  setStatus(`<span class="step-num">1</span> ${S.players[0].name}, pick tiles from a factory or center`);
+  render();
+}
+
+// Re-run a game with the same settings (skip the setup screen).
+// For online games we can't easily restart the same room, so fall back to Main Menu.
+function playAgain() {
+  if (Net && Net.isOnline()) { restartGame(); return; }
+  const np = CFG.np || 2;
+  const ai = CFG.ai != null ? CFG.ai : true;
+  const difficulty = CFG.difficulty || 'medium';
+  // Invalidate in-flight loops + clear floating overlays without going to home
+  gameGen++;
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('round-summary').classList.remove('show');
+  document.getElementById('scoring-banner').classList.remove('show');
+  document.getElementById('undo-btn').style.display = 'none';
+  document.querySelectorAll('.points-pop, .tally-ticker, .line-complete, .chain-overlay, .fly-tile').forEach(el => el.remove());
+  // Reset achievement-tracking globals so a fresh game starts at zero
+  window._bestMovePts = 0; window._bestMoveDesc = '';
+  window._maxGameDeficit = 0; window._localFloorPenalty = 0;
+  sel = null; undoState = null;
+  // Re-init game and render
   initState(np, ai, difficulty);
   setStatus(`<span class="step-num">1</span> ${S.players[0].name}, pick tiles from a factory or center`);
   render();
@@ -4269,6 +4974,121 @@ function showTutorial() {
 function closeTutorial() {
   document.getElementById('tutorial-overlay').classList.remove('show');
 }
+
+// ============ LIFETIME STATS OVERLAY ============
+function showLifetimeStats() {
+  const overlay = document.getElementById('stats-overlay');
+  overlay.classList.add('show');
+  overlay.onclick = (e) => { if (e.target === overlay) closeLifetimeStats(); };
+  renderLifetimeStats();
+}
+function closeLifetimeStats() {
+  document.getElementById('stats-overlay').classList.remove('show');
+}
+function renderLifetimeStats() {
+  const body = document.getElementById('stats-body');
+  const s = Achievements.getLifetime();
+  const unlocked = Achievements.getUnlocked();
+  const list = Achievements.getList();
+
+  if (!s.gamesPlayed) {
+    body.innerHTML = `<div class="stats-empty">No games yet. Play a match and your stats will appear here.</div>`;
+    return;
+  }
+
+  const winRate = Math.round((s.wins / Math.max(1, s.wins + s.losses + s.ties)) * 100);
+  const unlockedCount = list.filter(a => unlocked[a.id]).length;
+
+  let html = '';
+
+  // 4 numerical tiles
+  html += `
+    <div class="lt-tiles">
+      <div class="lt-tile"><div class="v">${s.gamesPlayed}</div><div class="k">Games</div></div>
+      <div class="lt-tile"><div class="v">${winRate}%</div><div class="k">Win Rate</div></div>
+      <div class="lt-tile"><div class="v">${s.bestScore}</div><div class="k">Best Score</div></div>
+      <div class="lt-tile"><div class="v">${s.bestStreak}</div><div class="k">Best Streak</div></div>
+    </div>`;
+
+  // Per-difficulty (vs AI) breakdown — proper table with header
+  const pd = s.perDifficulty || {};
+  const anyDiffPlayed = ['easy','medium','hard'].some(k => (pd[k]?.played || 0) > 0);
+  if (anyDiffPlayed) {
+    html += `
+      <div class="lt-section">
+        <div class="lt-label">vs AI</div>
+        <table class="lt-diff-table">
+          <thead>
+            <tr>
+              <th>Difficulty</th>
+              <th>Record</th>
+              <th>Avg</th>
+              <th>Best</th>
+            </tr>
+          </thead>
+          <tbody>`;
+    for (const diff of ['easy','medium','hard']) {
+      const d = pd[diff] || emptyDiffStub();
+      const wr = d.played > 0 ? Math.round((d.wins / d.played) * 100) : null;
+      const avg = d.played > 0 ? Math.round((d.totalScore || 0) / d.played) : null;
+      html += `
+        <tr>
+          <td class="lt-cell-name">${diff}</td>
+          <td class="lt-cell-record">
+            ${d.played > 0 ? `<b>${d.wins}</b>/${d.played} <span class="muted">(${wr}%)</span>` : '<span class="muted">—</span>'}
+          </td>
+          <td class="lt-cell-avg">${avg != null ? avg : '<span class="muted">—</span>'}</td>
+          <td class="lt-cell-best">${d.bestScore > 0 ? d.bestScore : '<span class="muted">—</span>'}</td>
+        </tr>`;
+    }
+    html += `
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+
+  // Achievement progress + grid
+  html += `
+    <div class="lt-section">
+      <div class="lt-ach-header">
+        <div class="lt-label">Achievements</div>
+        <div class="lt-ach-progress">${unlockedCount} <span class="total">/ ${list.length}</span></div>
+      </div>
+      <div class="lt-ach-grid">
+        ${list.map(a => {
+          const isUnlocked = !!unlocked[a.id];
+          // Locked: still show name/desc but tooltip hints at "Locked" prefix
+          const tipName = isUnlocked ? a.name : `${a.name} (Locked)`;
+          return `<div class="lt-ach-cell ${isUnlocked ? 'unlocked' : 'locked'}" data-name="${tipName}" data-desc="${a.desc}" aria-label="${tipName}: ${a.desc}">${Achievements.getSvg(a.id)}</div>`;
+        }).join('')}
+      </div>
+    </div>`;
+
+  // Reset button (with two-click confirmation)
+  html += `
+    <div class="lt-actions">
+      <button class="lt-reset" onclick="confirmResetLifetimeStats(this)">Reset Stats</button>
+    </div>`;
+
+  body.innerHTML = html;
+}
+
+function emptyDiffStub() { return { played: 0, wins: 0, bestScore: 0 }; }
+
+let _resetLtConfirmed = false;
+function confirmResetLifetimeStats(btn) {
+  if (!_resetLtConfirmed) {
+    btn.textContent = 'Click again to confirm';
+    _resetLtConfirmed = true;
+    setTimeout(() => { if (_resetLtConfirmed) { btn.textContent = 'Reset Stats'; _resetLtConfirmed = false; } }, 4000);
+    return;
+  }
+  Achievements.reset();
+  _resetLtConfirmed = false;
+  renderLifetimeStats();
+}
+
 function renderTut() {
   const t = TUT[tutStep];
   document.getElementById('tut-title').innerHTML = `<span class="tut-step">${tutStep+1}</span> ${t.title}`;
@@ -4299,6 +5119,7 @@ document.addEventListener('keydown', e => {
   if (e.key === '?' || (e.key === '/' && e.shiftKey)) showTutorial();
   if (e.key === 'Escape') {
     document.getElementById('tutorial-overlay').classList.remove('show');
+    document.getElementById('stats-overlay').classList.remove('show');
   }
   if (e.key === 'z' && (e.ctrlKey || e.metaKey)) undoPick();
 });

@@ -1899,6 +1899,7 @@
         <div class="setup-card sel" data-val="medium" onclick="selectCard(this,'diff-cards')"><div class="num">Medium</div><div class="desc">Strategic</div></div>
         <div class="setup-card" data-val="hard" onclick="selectCard(this,'diff-cards')"><div class="num">Hard</div><div class="desc">Lookahead</div></div>
         <div class="setup-card" data-val="expert" onclick="selectCard(this,'diff-cards')"><div class="num">Expert</div><div class="desc">Extra Hard</div></div>
+        <div class="setup-card" data-val="impossible" onclick="selectCard(this,'diff-cards')"><div class="num">Impossible</div><div class="desc">Deep Minimax</div></div>
       </div>
     </div>
 
@@ -2410,6 +2411,10 @@ const Achievements = (() => {
       <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" stroke-width="2"/></svg>`,
     grandmaster: `<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
       <g fill="currentColor"><path d="M6 12 L11 18 L14 8 L18 20 L22 8 L25 18 L30 12 L28 26 L8 26 Z"/><rect x="8" y="27" width="20" height="3" rx="1"/></g></svg>`,
+    theImpossible: `<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <path d="M10 18 C10 12, 16 12, 18 18 C20 24, 26 24, 26 18 C26 12, 20 12, 18 18 C16 24, 10 24, 10 18 Z"/>
+      </g></svg>`,
     beatAllDiff: `<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
       <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M5 11 l3 3 l6 -6"/><path d="M5 19 l3 3 l6 -6"/><path d="M5 27 l3 3 l6 -6"/>
@@ -2432,6 +2437,7 @@ const Achievements = (() => {
     { id: 'speedrun',     name: 'Speedrun',        desc: 'Won a game in 5 rounds or fewer' },
     { id: 'underdog',     name: 'Underdog',        desc: 'Beat the Hard AI' },
     { id: 'grandmaster',  name: 'Grandmaster',     desc: 'Beat the Expert (Extra Hard) AI' },
+    { id: 'theImpossible',name: 'The Impossible',  desc: 'Beat the Impossible AI' },
     { id: 'beatAllDiff',  name: 'Beat All Difficulties', desc: 'Won at least one game on Easy, Medium, AND Hard' },
     { id: 'centurion',    name: 'Centurion',       desc: 'Played 100 lifetime games' },
   ];
@@ -2443,7 +2449,7 @@ const Achievements = (() => {
     return {
       gamesPlayed: 0,
       wins: 0, losses: 0, ties: 0,
-      easyWon: false, mediumWon: false, hardWon: false, expertWon: false,
+      easyWon: false, mediumWon: false, hardWon: false, expertWon: false, impossibleWon: false,
       bestScore: 0,
       currentStreak: 0,
       bestStreak: 0,
@@ -2453,6 +2459,7 @@ const Achievements = (() => {
         medium: emptyDiff(),
         hard:   emptyDiff(),
         expert: emptyDiff(),
+        impossible: emptyDiff(),
       },
     };
   }
@@ -2469,7 +2476,7 @@ const Achievements = (() => {
         if (!lifetime.bestMove) lifetime.bestMove = { pts: 0, desc: '', date: '' };
         // Migrate older saves that lack perDifficulty (or its newer fields)
         if (!lifetime.perDifficulty) lifetime.perDifficulty = fresh.perDifficulty;
-        for (const k of ['easy','medium','hard','expert']) {
+        for (const k of ['easy','medium','hard','expert','impossible']) {
           if (!lifetime.perDifficulty[k]) lifetime.perDifficulty[k] = emptyDiff();
           else if (lifetime.perDifficulty[k].totalScore == null) lifetime.perDifficulty[k].totalScore = 0;
         }
@@ -2516,6 +2523,7 @@ const Achievements = (() => {
         if (perGame.maxDeficit >= 10)           newlyUnlocked.comebackKid = true;
         if (perGame.mode === 'ai' && perGame.difficulty === 'hard')   newlyUnlocked.underdog = true;
         if (perGame.mode === 'ai' && perGame.difficulty === 'expert') newlyUnlocked.grandmaster = true;
+        if (perGame.mode === 'ai' && perGame.difficulty === 'impossible') newlyUnlocked.theImpossible = true;
       }
     }
     if (perGame.bestMovePts >= 7) newlyUnlocked.crossMaster = true;
@@ -2552,6 +2560,7 @@ const Achievements = (() => {
           if (perGame.difficulty === 'medium') lifetime.mediumWon = true;
           if (perGame.difficulty === 'hard')   lifetime.hardWon = true;
           if (perGame.difficulty === 'expert') lifetime.expertWon = true;
+          if (perGame.difficulty === 'impossible') lifetime.impossibleWon = true;
         }
       }
     }
@@ -4065,7 +4074,7 @@ function doAI() {
   const moves = enumerateMoves(S, S.cur);
   if (!moves.length) { endTurn(); return; }
   const diff = CFG.difficulty || 'medium';
-  const best = diff === 'expert' ? pickExpert(moves) : diff === 'hard' ? pickHard(moves) : diff === 'medium' ? pickMedium(moves) : pickEasy(moves);
+  const best = diff === 'impossible' ? pickImpossible(moves) : diff === 'expert' ? pickExpert(moves) : diff === 'hard' ? pickHard(moves) : diff === 'medium' ? pickMedium(moves) : pickEasy(moves);
   execMove(S, S.cur, best);
   S.phase = 'pick';
   endTurn();
@@ -4362,6 +4371,73 @@ function pickExpert(moves) {
       }
     }
     if (sc > bs) { bs = sc; best = m; }
+  }
+  return best;
+}
+
+// ========== IMPOSSIBLE: Deep recursive minimax (full root breadth, alpha-beta-style adversarial pruning) ==========
+// Note: TRUE perfect play in Azul is intractable (the game tree is enormous, branching factor ~20–60
+// per ply across many rounds). This is the deepest practical search:
+//   - 2P: 4 plies (me → opp → me → opp), full root breadth, top-K pruning deeper down.
+//   - 3–4P: 3 plies (me → opp → opp[/opp]), same pruning shape.
+// Opponents are modeled adversarially (they pick the move that minimizes our net advantage).
+function pickImpossible(moves) {
+  const np = CFG.np;
+  const meIdx = S.cur;
+  const maxDepth = np === 2 ? 4 : 3;
+  // top-K cap by depth from root. depth 0 = root (consider every move).
+  const topKByDepth = [Infinity, 8, 8, 6, 5];
+
+  // Net score from meIdx's perspective (we maximize this; opps minimize it).
+  function leafScore(state) {
+    let s = evalPosition(state, meIdx);
+    for (let i = 0; i < np; i++) if (i !== meIdx) s -= evalPosition(state, i) * 0.55;
+    return s;
+  }
+
+  // Recursive minimax. depthFromRoot starts at 1 (we already executed the root move before calling).
+  function search(state, toMove, depthFromRoot) {
+    // Terminal: depth limit, game over, or round-end (further moves only happen after round-end scoring).
+    if (
+      depthFromRoot >= maxDepth ||
+      state.over ||
+      (state.fac.every(f => !f.length) && !state.ctr.length)
+    ) {
+      return leafScore(state);
+    }
+    const mvs = enumerateMoves(state, toMove);
+    if (!mvs.length) return leafScore(state);
+
+    const k = topKByDepth[Math.min(depthFromRoot, topKByDepth.length - 1)] || 5;
+    const cands = mvs.length > k ? prefilterMoves(state, toMove, mvs, k) : mvs;
+    const next = (toMove + 1) % np;
+
+    if (toMove === meIdx) {
+      let bestV = -Infinity;
+      for (const m of cands) {
+        const s = cloneState(state); execMove(s, toMove, m);
+        const v = search(s, next, depthFromRoot + 1);
+        if (v > bestV) bestV = v;
+      }
+      return bestV;
+    } else {
+      let worstV = Infinity;
+      for (const m of cands) {
+        const s = cloneState(state); execMove(s, toMove, m);
+        const v = search(s, next, depthFromRoot + 1);
+        if (v < worstV) worstV = v;
+      }
+      return worstV;
+    }
+  }
+
+  // Root: try every legal move (no prefilter at root — perfect play considers everything).
+  let best = moves[0], bs = -Infinity;
+  for (const m of moves) {
+    const sim = cloneState(S);
+    execMove(sim, meIdx, m);
+    const v = search(sim, (meIdx + 1) % np, 1);
+    if (v > bs) { bs = v; best = m; }
   }
   return best;
 }
@@ -5099,7 +5175,7 @@ function renderLifetimeStats() {
 
   // Per-difficulty (vs AI) breakdown — proper table with header
   const pd = s.perDifficulty || {};
-  const anyDiffPlayed = ['easy','medium','hard','expert'].some(k => (pd[k]?.played || 0) > 0);
+  const anyDiffPlayed = ['easy','medium','hard','expert','impossible'].some(k => (pd[k]?.played || 0) > 0);
   if (anyDiffPlayed) {
     html += `
       <div class="lt-section">
@@ -5114,7 +5190,7 @@ function renderLifetimeStats() {
             </tr>
           </thead>
           <tbody>`;
-    for (const diff of ['easy','medium','hard','expert']) {
+    for (const diff of ['easy','medium','hard','expert','impossible']) {
       const d = pd[diff] || emptyDiffStub();
       const wr = d.played > 0 ? Math.round((d.wins / d.played) * 100) : null;
       const avg = d.played > 0 ? Math.round((d.totalScore || 0) / d.played) : null;
